@@ -970,6 +970,13 @@
     document.addEventListener('click', async (e) => {
       const target = e.target.closest('[data-action]');
       if (!target) return;
+      // --- AJOUT : Gestion de l'isolation des modales ---
+      const stopZone = e.target.closest('[data-stop]');
+      // Si on a cliqué dans une zone data-stop, mais que l'élément data-action 
+      // trouvé est en dehors (le backdrop), on annule l'exécution.
+      if (stopZone && !stopZone.contains(target)) {
+        return;
+      }
       const action = target.dataset.action;
 
       // Ouvrir modale ajout
