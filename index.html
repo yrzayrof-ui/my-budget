@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#2D2A24">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mon Budget">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Mon Budget</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="icon" type="image/png" href="./icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+      background: #F5F1E8; color: #1c1917; min-height: 100vh;
+      overscroll-behavior: none; -webkit-font-smoothing: antialiased;
+    }
+    body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+
+    .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; font-weight: 500; }
+    .num { font-variant-numeric: tabular-nums; }
+
+    .container { max-width: 28rem; margin: 0 auto; padding: 2rem 1.25rem 8rem; }
+
+    /* Header */
+    .header { margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header-month { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: #78716c; margin-bottom: 0.25rem; }
+    .header-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.875rem; font-weight: 500; color: #1c1917; }
+    .menu-btn {
+      background: white; border: none; padding: 0.6rem; border-radius: 999px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04); cursor: pointer; color: #57534e;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Sync status pill */
+    .sync-pill {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.3rem 0.7rem; border-radius: 999px; font-size: 0.7rem;
+      margin-bottom: 1rem; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      letter-spacing: 0.02em;
+    }
+    .sync-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .sync-pill.synced .sync-dot { background: #5B8266; }
+    .sync-pill.syncing .sync-dot { background: #C49B5B; animation: pulse 1.2s ease-in-out infinite; }
+    .sync-pill.offline .sync-dot { background: #a8a29e; }
+    .sync-pill.error .sync-dot { background: #B85450; }
+    .sync-pill.local .sync-dot { background: #d6d3d1; }
+    .sync-pill .label { color: #57534e; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* Balance card */
+    .balance-card {
+      position: relative; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #2D2A24 0%, #3D3830 100%);
+      box-shadow: 0 20px 40px -20px rgba(45, 42, 36, 0.4); overflow: hidden;
+    }
+    .balance-card::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 3px 3px; pointer-events: none;
+    }
+    .balance-label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; color: #C9A961; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; }
+    .balance-amount { font-family: 'Fraunces', Georgia, serif; font-size: 2.25rem; font-weight: 500; color: white; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .balance-currency { font-size: 1.125rem; color: #C9A961; font-weight: 400; margin-left: 0.4rem; }
+    .balance-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .stat-label { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.25rem; font-size: 0.625rem; letter-spacing: 0.05em; text-transform: uppercase; color: #a8a29e; }
+    .stat-amount { font-family: 'Fraunces', Georgia, serif; font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+    .income-color { color: #86EFAC; }
+    .expense-color { color: #E89178; }
+
+    /* Action buttons */
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 2rem; }
+    .action-btn { border: none; border-radius: 1rem; padding: 1rem; font-family: inherit; font-weight: 500; font-size: 1rem; cursor: pointer; transition: transform 0.1s; color: #F5F1E8; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .action-btn:active { transform: scale(0.96); }
+    .action-income { background: #5B8266; box-shadow: 0 4px 12px -4px rgba(91, 130, 102, 0.4); }
+    .action-expense { background: #9A6240; box-shadow: 0 4px 12px -4px rgba(154, 98, 64, 0.4); }
+
+    /* Sections */
+    .section-title { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: #78716c; margin-bottom: 1rem; }
+    .section { margin-bottom: 2rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .section-count { font-size: 0.75rem; color: #a8a29e; }
+
+    /* Categories breakdown */
+    .category-card { background: white; border-radius: 1rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 0.875rem; }
+    .cat-row { display: flex; flex-direction: column; }
+    .cat-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+    .cat-row-label { display: flex; align-items: center; gap: 0.625rem; }
+    .cat-icon { width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cat-name { font-size: 0.875rem; color: #292524; }
+    .cat-amount { font-family: 'Fraunces', Georgia, serif; font-size: 0.875rem; font-variant-numeric: tabular-nums; color: #1c1917; font-weight: 500; }
+    .cat-bar { height: 0.25rem; border-radius: 999px; background: #f5f5f4; overflow: hidden; margin-left: 2.25rem; }
+    .cat-bar-fill { height: 100%; border-radius: 999px; transition: width 0.3s ease; }
+
+    /* Transaction list */
+    .tx-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .tx-item { background: white; border-radius: 1rem; padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); animation: fadeIn 0.3s ease-out; }
+    .tx-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .tx-content { flex: 1; min-width: 0; }
+    .tx-desc { font-size: 0.875rem; font-weight: 500; color: #1c1917; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tx-meta { font-size: 0.75rem; color: #78716c; }
+    .tx-amount { font-family: 'Fraunces', Georgia, serif; font-variant-numeric: tabular-nums; font-weight: 500; flex-shrink: 0; text-align: right; }
+    .tx-delete { background: none; border: none; padding: 0.4rem; margin-right: -0.25rem; color: #d6d3d1; cursor: pointer; transition: color 0.15s; }
+    .tx-delete:active { color: #57534e; }
+
+    .empty { background: white; border-radius: 1rem; padding: 2rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .empty-icon { color: #d6d3d1; margin-bottom: 0.75rem; }
+    .empty-text { font-size: 0.875rem; color: #78716c; }
+    .empty-hint { font-size: 0.75rem; color: #a8a29e; margin-top: 0.25rem; }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(45, 42, 36, 0.5); display: flex; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s ease-out; }
+    .modal-sheet { width: 100%; max-width: 28rem; background: #F5F1E8; border-radius: 1.5rem 1.5rem 0 0; padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom)); max-height: 92vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+    .modal-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.5rem; font-weight: 500; color: #1c1917; }
+    .modal-close { background: white; border: none; padding: 0.5rem; border-radius: 999px; cursor: pointer; color: #57534e; display: flex; align-items: center; justify-content: center; }
+
+    .field-label { display: block; font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: #78716c; margin-bottom: 0.5rem; }
+    .field-group { margin-bottom: 1.25rem; }
+    .field-help { font-size: 0.75rem; color: #a8a29e; margin-top: 0.4rem; line-height: 1.4; }
+
+    .amount-input { background: white; border-radius: 1rem; padding: 1rem; display: flex; align-items: baseline; gap: 0.5rem; }
+    .amount-input input { font-family: 'Fraunces', Georgia, serif; font-size: 1.875rem; font-weight: 500; font-variant-numeric: tabular-nums; background: transparent; border: none; outline: none; flex: 1; min-width: 0; color: #1c1917; width: 100%; }
+    .amount-input input::placeholder { color: #d6d3d1; }
+    .amount-currency { font-family: 'Fraunces', Georgia, serif; font-size: 1.25rem; color: #a8a29e; }
+
+    .text-input { width: 100%; background: white; border-radius: 1rem; padding: 0.875rem 1rem; border: none; outline: none; color: #1c1917; font-family: inherit; font-size: 0.95rem; }
+    .text-input::placeholder { color: #a8a29e; }
+    .text-input:focus { box-shadow: 0 0 0 2px rgba(91, 130, 102, 0.3); }
+    .text-input.error { box-shadow: 0 0 0 2px rgba(184, 84, 80, 0.4); }
+
+    .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .category-btn { border: none; background: white; border-radius: 1rem; padding: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; cursor: pointer; transition: transform 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.04); color: #1c1917; font-family: inherit; }
+    .category-btn:active { transform: scale(0.96); }
+    .category-btn.selected { color: white; }
+    .category-btn-label { font-size: 0.7rem; font-weight: 500; }
+
+    .confirm-btn { width: 100%; border: none; border-radius: 1rem; padding: 1rem; font-family: inherit; font-size: 1rem; font-weight: 500; color: #F5F1E8; cursor: pointer; transition: all 0.1s; }
+    .confirm-btn:active { transform: scale(0.98); }
+    .confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Confirm dialog */
+    .confirm-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(45, 42, 36, 0.5); display: flex; align-items: center; justify-content: center; padding: 1.25rem; animation: fadeIn 0.2s ease-out; }
+    .confirm-dialog { background: white; border-radius: 1.5rem; padding: 1.5rem; max-width: 22rem; width: 100%; }
+    .confirm-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.125rem; font-weight: 500; color: #1c1917; margin-bottom: 0.25rem; }
+    .confirm-msg { font-size: 0.875rem; color: #78716c; margin-bottom: 1.25rem; line-height: 1.5; }
+    .confirm-actions { display: flex; gap: 0.5rem; }
+    .btn-cancel { flex: 1; border: none; border-radius: 0.75rem; padding: 0.75rem; font-family: inherit; font-weight: 500; cursor: pointer; background: #f5f5f4; color: #44403c; }
+    .btn-danger { flex: 1; border: none; border-radius: 0.75rem; padding: 0.75rem; font-family: inherit; font-weight: 500; cursor: pointer; background: #B85450; color: white; }
+
+    .menu-list { display: flex; flex-direction: column; gap: 0.25rem; }
+    .menu-item {
+      background: white; border: none; border-radius: 0.75rem; padding: 0.875rem 1rem;
+      text-align: left; cursor: pointer; font-family: inherit; font-size: 0.95rem;
+      color: #1c1917; display: flex; align-items: center; gap: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04); width: 100%;
+    }
+    .menu-item-danger { color: #B85450; }
+    .menu-item-info {
+      background: #2D2A24; color: #F5F1E8; padding: 0.875rem 1rem;
+      border-radius: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem;
+    }
+    .menu-item-info strong { color: #C9A961; display: block; margin-bottom: 0.15rem; }
+    .menu-section-title { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: #a8a29e; margin: 1rem 0 0.5rem 0.25rem; }
+
+    /* Auth screen */
+    .auth-screen {
+      min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+      padding: 2rem 1.25rem; max-width: 28rem; margin: 0 auto;
+    }
+    .auth-logo { text-align: center; margin-bottom: 2rem; }
+    .auth-logo-circle { width: 3.5rem; height: 3.5rem; background: #2D2A24; border-radius: 1rem; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: #C9A961; }
+    .auth-title { font-family: 'Fraunces', Georgia, serif; font-size: 2rem; font-weight: 500; color: #1c1917; margin-bottom: 0.4rem; text-align: center; }
+    .auth-subtitle { font-size: 0.9rem; color: #78716c; text-align: center; line-height: 1.5; margin-bottom: 2rem; }
+    .auth-tabs { display: flex; background: white; border-radius: 1rem; padding: 0.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .auth-tab { flex: 1; padding: 0.6rem; border: none; background: transparent; border-radius: 0.75rem; font-family: inherit; font-size: 0.85rem; cursor: pointer; color: #78716c; font-weight: 500; }
+    .auth-tab.active { background: #2D2A24; color: white; }
+    .auth-error { background: #FEE2E2; color: #991B1B; padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 0.85rem; margin-bottom: 1rem; }
+    .auth-success { background: #D1FAE5; color: #065F46; padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 0.85rem; margin-bottom: 1rem; }
+    .auth-link { background: transparent; border: none; color: #78716c; cursor: pointer; font-family: inherit; font-size: 0.85rem; text-decoration: underline; padding: 0.5rem; }
+    .auth-skip { text-align: center; margin-top: 1rem; }
+
+    .welcome-banner { background: linear-gradient(135deg, #2D2A24, #3D3830); color: #F5F1E8; padding: 1rem 1.25rem; border-radius: 1rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem; }
+    .welcome-banner-text { flex: 1; font-size: 0.85rem; line-height: 1.4; }
+    .welcome-banner-text strong { color: #C9A961; }
+    .welcome-banner button { background: #C9A961; color: #2D2A24; border: none; padding: 0.4rem 0.875rem; border-radius: 999px; font-weight: 600; font-size: 0.8rem; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+    .welcome-banner .close-x { background: transparent; color: #a8a29e; padding: 0; font-size: 1.2rem; line-height: 1; cursor: pointer; border: none; }
+
+    /* Animations */
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #78716c; }
+    .toast { position: fixed; bottom: calc(1rem + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: #2D2A24; color: #F5F1E8; padding: 0.75rem 1.25rem; border-radius: 999px; font-size: 0.85rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 60; animation: slideUp 0.3s ease-out; }
+  </style>
+</head>
+<body>
+  <div id="app"><div class="loading-screen">Chargement…</div></div>
+  <div id="toast-container"></div>
+
+  <!-- Tout le code utilise type="module" pour pouvoir importer Supabase via ESM -->
+  <script type="module">
+    /* ==========================================================
+       1) IMPORT DE SUPABASE (CDN ESM, mis en cache offline)
+       ========================================================== */
+    let _createClient = null;
+    async function loadSupabase() {
+      if (_createClient) return _createClient;
+      const mod = await import('https://esm.sh/@supabase/supabase-js@2.45.0');
+      _createClient = mod.createClient;
+      return _createClient;
+    }
+
+    /* ==========================================================
+       2) BASE DE DONNÉES LOCALE (IndexedDB v2)
+       Cache local + fonctionnement hors-ligne
+       ========================================================== */
+    const DB_NAME = 'budgetDB';
+    const DB_VERSION = 2;
+    const STORE = 'transactions';
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          let store;
+          if (!db.objectStoreNames.contains(STORE)) {
+            store = db.createObjectStore(STORE, { keyPath: 'id' });
+          } else {
+            store = e.target.transaction.objectStore(STORE);
+          }
+          // Indexes (créés une seule fois)
+          if (!store.indexNames.contains('date')) store.createIndex('date', 'date');
+          if (!store.indexNames.contains('synced')) store.createIndex('synced', 'synced');
+          if (!store.indexNames.contains('updated_at')) store.createIndex('updated_at', 'updated_at');
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    async function dbGetAll() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readonly');
+        const req = tx.objectStore(STORE).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function dbPut(item) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        const req = tx.objectStore(STORE).put(item);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function dbBulkPut(items) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        const store = tx.objectStore(STORE);
+        items.forEach(it => store.put(it));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function dbClear() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        const req = tx.objectStore(STORE).clear();
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function dbGetUnsynced() {
+      const all = await dbGetAll();
+      return all.filter(t => t.synced === false);
+    }
+
+    /* ==========================================================
+       3) CONFIG CLOUD (URL + clé Supabase) — stockée en localStorage
+       La clé "anon" est faite pour être publique, donc safe ici.
+       ========================================================== */
+    const CFG_KEY = 'budget-supabase-cfg';
+    function getCfg() {
+      try { return JSON.parse(localStorage.getItem(CFG_KEY)); } catch { return null; }
+    }
+    function setCfg(url, key) {
+      localStorage.setItem(CFG_KEY, JSON.stringify({ url: url.trim(), key: key.trim() }));
+    }
+    function clearCfg() {
+      localStorage.removeItem(CFG_KEY);
+    }
+
+    /* ==========================================================
+       4) CLIENT SUPABASE + SYNC ENGINE
+       ========================================================== */
+    let supabase = null;
+    let realtimeChannel = null;
+
+    async function initSupabaseClient() {
+      const cfg = getCfg();
+      if (!cfg || !cfg.url || !cfg.key) {
+        supabase = null;
+        return null;
+      }
+      try {
+        const createClient = await loadSupabase();
+        supabase = createClient(cfg.url, cfg.key, {
+          auth: { persistSession: true, autoRefreshToken: true, storage: localStorage },
+        });
+
+        // Écoute les changements de session
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          state.user = session?.user || null;
+          if (state.user) {
+            await syncEngine.fullSync();
+            subscribeRealtime();
+          } else {
+            unsubscribeRealtime();
+          }
+          render();
+        });
+
+        const { data: { session } } = await supabase.auth.getSession();
+        state.user = session?.user || null;
+        return supabase;
+      } catch (e) {
+        console.error('Supabase init failed', e);
+        supabase = null;
+        return null;
+      }
+    }
+
+    function subscribeRealtime() {
+      if (!supabase || !state.user) return;
+      unsubscribeRealtime();
+
+      realtimeChannel = supabase
+        .channel('budget-changes')
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${state.user.id}` },
+          async (payload) => {
+            // Un autre appareil a fait une modif → on met à jour notre cache local
+            if (payload.eventType === 'DELETE') {
+              await dbPut({ ...payload.old, deleted_at: new Date().toISOString(), synced: true });
+            } else {
+              const row = payload.new;
+              await dbPut({ ...row, synced: true });
+            }
+            await reloadFromLocal();
+            render();
+          })
+        .subscribe();
+    }
+
+    function unsubscribeRealtime() {
+      if (realtimeChannel) {
+        try { supabase?.removeChannel(realtimeChannel); } catch {}
+        realtimeChannel = null;
+      }
+    }
+
+    const syncEngine = {
+      async fullSync() {
+        if (!supabase || !state.user) return;
+        if (!navigator.onLine) {
+          state.syncStatus = 'offline';
+          render();
+          return;
+        }
+
+        state.syncStatus = 'syncing';
+        render();
+
+        try {
+          // 1) Push les transactions locales non synchronisées
+          const pending = await dbGetUnsynced();
+          if (pending.length > 0) {
+            const rows = pending.map(t => ({
+              id: t.id,
+              type: t.type,
+              amount: t.amount,
+              category: t.category,
+              description: t.description || '',
+              date: t.date,
+              deleted_at: t.deleted_at || null,
+            }));
+            const { error } = await supabase.from('transactions').upsert(rows);
+            if (error) throw error;
+            // Marquer tout comme synced
+            for (const t of pending) {
+              await dbPut({ ...t, synced: true });
+            }
+          }
+
+          // 2) Pull tout depuis le cloud
+          const { data, error: pullErr } = await supabase
+            .from('transactions')
+            .select('*');
+          if (pullErr) throw pullErr;
+
+          // 3) Merge dans IndexedDB (cloud = source de vérité après merge)
+          const cloudItems = (data || []).map(r => ({
+            id: r.id,
+            type: r.type,
+            amount: parseFloat(r.amount),
+            category: r.category,
+            description: r.description || '',
+            date: r.date,
+            deleted_at: r.deleted_at,
+            synced: true,
+          }));
+          await dbBulkPut(cloudItems);
+          await reloadFromLocal();
+
+          state.syncStatus = 'synced';
+          state.lastSyncAt = new Date();
+          render();
+        } catch (e) {
+          console.error('Sync error', e);
+          state.syncStatus = 'error';
+          state.syncError = e.message || 'Erreur de synchronisation';
+          render();
+        }
+      },
+
+      async pushChange(tx) {
+        if (!supabase || !state.user || !navigator.onLine) return;
+        try {
+          const row = {
+            id: tx.id,
+            type: tx.type,
+            amount: tx.amount,
+            category: tx.category,
+            description: tx.description || '',
+            date: tx.date,
+            deleted_at: tx.deleted_at || null,
+          };
+          const { error } = await supabase.from('transactions').upsert(row);
+          if (error) throw error;
+          await dbPut({ ...tx, synced: true });
+          state.syncStatus = 'synced';
+          state.lastSyncAt = new Date();
+          render();
+        } catch (e) {
+          console.error('Push failed', e);
+          state.syncStatus = 'error';
+          state.syncError = e.message;
+          render();
+        }
+      }
+    };
+
+    /* ==========================================================
+       5) ICÔNES SVG
+       ========================================================== */
+    const ICONS = {
+      wallet: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v0"/><circle cx="18" cy="14" r="2"/></svg>',
+      walletBig: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v0"/><circle cx="18" cy="14" r="2"/></svg>',
+      plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+      arrowDown: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l4 4 4-4M12 8v8"/></svg>',
+      arrowUp: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 12l-4-4-4 4M12 16V8"/></svg>',
+      trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+      x: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+      menu: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>',
+      calendar: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+      home: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6"/></svg>',
+      basket: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18l-2 13H5L3 6zM8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+      car: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M3 17V8l3-5h12l3 5v9M5 17v3M19 17v3"/><circle cx="7" cy="14" r="1"/><circle cx="17" cy="14" r="1"/></svg>',
+      heart: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+      sparkles: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 5L19 9.5l-5.5 1.5L12 16l-1.5-5L5 9.5 10.5 8 12 3z"/></svg>',
+      shirt: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2l-4 4-4-4-4.38 1.46a1.99 1.99 0 0 0-1.34 2.5l1.34 4.04 2 12.04h12.76l2-12.04 1.34-4.04a2 2 0 0 0-1.34-2.5z"/></svg>',
+      receipt: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v18l-3-2-2 2-2-2-2 2-2-2-3 2zM9 7h6M9 12h6M9 17h4"/></svg>',
+      piggy: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11h2v3h-2M3 14a8 8 0 0 1 8-8h6a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-1l-1 2h-3l-1-2H7l-1 2H4l-1-2H3a2 2 0 0 1 0-4v-2zm13-2v.01"/></svg>',
+      more: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>',
+      briefcase: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+      cloud: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
+      cloudOff: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17.6V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2c0-1 1-2 2-2h7m4-9.4l2-1.6M2 2l20 20"/></svg>',
+      logout: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
+      refresh: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>',
+      download: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>',
+      upload: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>',
+    };
+
+    /* ==========================================================
+       6) CATÉGORIES
+       ========================================================== */
+    const CATEGORIES = {
+      expense: [
+        { id: 'logement', label: 'Logement', icon: 'home', color: '#9A6240' },
+        { id: 'alimentation', label: 'Alimentation', icon: 'basket', color: '#7C8B5A' },
+        { id: 'transport', label: 'Transport', icon: 'car', color: '#5C7A89' },
+        { id: 'sante', label: 'Santé', icon: 'heart', color: '#B85450' },
+        { id: 'loisirs', label: 'Loisirs', icon: 'sparkles', color: '#C49B5B' },
+        { id: 'vetements', label: 'Vêtements', icon: 'shirt', color: '#8B6F8E' },
+        { id: 'factures', label: 'Factures', icon: 'receipt', color: '#6B7B8C' },
+        { id: 'epargne', label: 'Épargne', icon: 'piggy', color: '#5B8266' },
+        { id: 'autres', label: 'Autres', icon: 'more', color: '#7A6A5A' },
+      ],
+      income: [
+        { id: 'salaire', label: 'Salaire', icon: 'briefcase', color: '#5B8266' },
+        { id: 'autres-revenus', label: 'Autres', icon: 'more', color: '#7A6A5A' },
+      ],
+    };
+    function findCat(type, id) {
+      return CATEGORIES[type].find(c => c.id === id) || CATEGORIES[type][CATEGORIES[type].length - 1];
+    }
+
+    /* ==========================================================
+       7) ÉTAT GLOBAL
+       ========================================================== */
+    const state = {
+      transactions: [],
+      loading: true,
+      modal: null,         // 'income' | 'expense' | 'menu' | 'cloud-setup' | 'auth'
+      authMode: 'signin',  // 'signin' | 'signup'
+      authForm: { email: '', password: '' },
+      authError: null,
+      authSuccess: null,
+      authLoading: false,
+      cloudForm: { url: '', key: '' },
+      confirmDelete: null,
+      confirmClear: false,
+      confirmSignOut: false,
+      form: { amount: '', category: '', description: '' },
+      user: null,
+      syncStatus: 'local',  // 'local' | 'syncing' | 'synced' | 'offline' | 'error'
+      syncError: null,
+      lastSyncAt: null,
+      welcomeBannerDismissed: localStorage.getItem('budget-welcome-dismissed') === '1',
+    };
+
+    function setState(patch) { Object.assign(state, patch); render(); }
+
+    async function reloadFromLocal() {
+      const all = await dbGetAll();
+      // Filtre les éléments soft-deleted
+      state.transactions = all.filter(t => !t.deleted_at);
+    }
+
+    /* ==========================================================
+       8) HELPERS
+       ========================================================== */
+    function formatMoney(n) {
+      return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    }
+    function formatDate(iso) {
+      return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+    }
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+    function showToast(msg, ms = 2500) {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = 'toast'; t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), ms);
+    }
+
+    /* ==========================================================
+       9) RENDU
+       ========================================================== */
+    function render() {
+      const app = document.getElementById('app');
+      if (state.loading) {
+        app.innerHTML = '<div class="loading-screen">Chargement…</div>';
+        return;
+      }
+
+      const now = new Date();
+      const monthName = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      const monthTx = state.transactions
+        .filter(t => {
+          const d = new Date(t.date);
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      const totalIncome = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+      const totalExpense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const balance = totalIncome - totalExpense;
+
+      const expByCat = {};
+      monthTx.filter(t => t.type === 'expense').forEach(t => {
+        expByCat[t.category] = (expByCat[t.category] || 0) + t.amount;
+      });
+      const sortedCats = Object.entries(expByCat).sort((a, b) => b[1] - a[1]);
+
+      // Sync pill label & class
+      let pillClass = 'local', pillLabel = 'Mode local';
+      if (state.user) {
+        if (state.syncStatus === 'syncing') { pillClass = 'syncing'; pillLabel = 'Synchronisation…'; }
+        else if (state.syncStatus === 'synced') { pillClass = 'synced'; pillLabel = 'Synchronisé'; }
+        else if (state.syncStatus === 'offline') { pillClass = 'offline'; pillLabel = 'Hors-ligne'; }
+        else if (state.syncStatus === 'error') { pillClass = 'error'; pillLabel = 'Erreur de sync'; }
+        else { pillClass = 'synced'; pillLabel = 'Cloud activé'; }
+      }
+
+      let html = `
+        <div class="container">
+          <header class="header">
+            <div>
+              <p class="header-month">${monthName}</p>
+              <h1 class="header-title">Mon Budget</h1>
+            </div>
+            <button class="menu-btn" data-action="open-menu" aria-label="Menu">${ICONS.menu}</button>
+          </header>
+
+          <div class="sync-pill ${pillClass}">
+            <span class="sync-dot"></span>
+            <span class="label">${pillLabel}</span>
+          </div>
+      `;
+
+      // Bannière de bienvenue (si pas encore configuré et pas dismissé)
+      if (!state.user && !getCfg() && !state.welcomeBannerDismissed) {
+        html += `
+          <div class="welcome-banner">
+            <div class="welcome-banner-text">
+              <strong>Synchroniser entre appareils</strong>
+              Active la synchronisation cloud (gratuit avec Supabase) pour retrouver tes données sur tous tes appareils.
+            </div>
+            <button data-action="open-cloud-setup">Activer</button>
+            <button class="close-x" data-action="dismiss-welcome">×</button>
+          </div>
+        `;
+      }
+
+      html += `
+          <div class="balance-card">
+            <div class="balance-label">${ICONS.wallet}<span>Solde du mois</span></div>
+            <div class="balance-amount num">${balance < 0 ? '-' : ''}${formatMoney(Math.abs(balance))}<span class="balance-currency">DH</span></div>
+            <div class="balance-stats">
+              <div>
+                <div class="stat-label income-color">${ICONS.arrowDown}<span>Revenus</span></div>
+                <p class="stat-amount num income-color">${formatMoney(totalIncome)}</p>
+              </div>
+              <div>
+                <div class="stat-label expense-color">${ICONS.arrowUp}<span>Dépenses</span></div>
+                <p class="stat-amount num expense-color">${formatMoney(totalExpense)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="action-btn action-income" data-action="open-modal" data-type="income">${ICONS.plus}<span>Revenu</span></button>
+            <button class="action-btn action-expense" data-action="open-modal" data-type="expense">${ICONS.plus}<span>Dépense</span></button>
+          </div>
+      `;
+
+      if (sortedCats.length > 0) {
+        html += `<section class="section"><h2 class="section-title">Par catégorie</h2><div class="category-card">`;
+        sortedCats.forEach(([catId, amt]) => {
+          const cat = findCat('expense', catId);
+          const pct = totalExpense > 0 ? (amt / totalExpense) * 100 : 0;
+          html += `
+            <div class="cat-row">
+              <div class="cat-row-top">
+                <div class="cat-row-label">
+                  <div class="cat-icon" style="background:${cat.color}22; color:${cat.color}">${ICONS[cat.icon]}</div>
+                  <span class="cat-name">${cat.label}</span>
+                </div>
+                <span class="cat-amount num">${formatMoney(amt)}</span>
+              </div>
+              <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%; background:${cat.color}"></div></div>
+            </div>`;
+        });
+        html += `</div></section>`;
+      }
+
+      html += `
+        <section class="section">
+          <div class="section-header">
+            <h2 class="section-title" style="margin-bottom:0">Historique</h2>
+            <span class="section-count">${monthTx.length} opérations</span>
+          </div>`;
+
+      if (monthTx.length === 0) {
+        html += `
+          <div class="empty">
+            <div class="empty-icon">${ICONS.calendar}</div>
+            <p class="empty-text">Aucune opération ce mois-ci</p>
+            <p class="empty-hint">Ajoute ton salaire ou une dépense</p>
+          </div>`;
+      } else {
+        html += '<div class="tx-list">';
+        monthTx.forEach(tx => {
+          const cat = findCat(tx.type, tx.category);
+          const isIncome = tx.type === 'income';
+          html += `
+            <div class="tx-item">
+              <div class="tx-icon" style="background:${cat.color}22; color:${cat.color}">${ICONS[cat.icon]}</div>
+              <div class="tx-content">
+                <p class="tx-desc">${escapeHtml(tx.description)}</p>
+                <p class="tx-meta">${cat.label} · ${formatDate(tx.date)}</p>
+              </div>
+              <p class="tx-amount num" style="color:${isIncome ? '#5B8266' : '#9A6240'}">
+                ${isIncome ? '+' : '-'}${formatMoney(tx.amount)}
+              </p>
+              <button class="tx-delete" data-action="ask-delete" data-id="${tx.id}" aria-label="Supprimer">${ICONS.trash}</button>
+            </div>`;
+        });
+        html += '</div>';
+      }
+
+      html += `</section></div>`;
+
+      // ===== Modal: Add transaction =====
+      if (state.modal === 'income' || state.modal === 'expense') {
+        const type = state.modal;
+        const cats = CATEGORIES[type];
+        const f = state.form;
+        const validAmount = parseFloat((f.amount || '').replace(',', '.')) > 0;
+        html += `
+          <div class="modal-backdrop" data-action="close-modal">
+            <div class="modal-sheet" data-stop>
+              <div class="modal-header">
+                <div>
+                  <p class="header-month">Nouvelle</p>
+                  <h3 class="modal-title">${type === 'income' ? 'Recette' : 'Dépense'}</h3>
+                </div>
+                <button class="modal-close" data-action="close-modal">${ICONS.x}</button>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Montant</label>
+                <div class="amount-input">
+                  <input type="text" inputmode="decimal" id="amount-input" value="${f.amount}" placeholder="0,00" autofocus />
+                  <span class="amount-currency">DH</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Description (optionnel)</label>
+                <input type="text" class="text-input" id="desc-input" value="${escapeHtml(f.description)}" placeholder="${type === 'income' ? 'Salaire de mai' : 'Courses du marché'}" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Catégorie</label>
+                <div class="category-grid">`;
+        cats.forEach(cat => {
+          const selected = f.category === cat.id;
+          const styleSel = selected ? `background:${cat.color}; box-shadow:0 4px 12px -4px ${cat.color}66;` : '';
+          html += `
+            <button class="category-btn ${selected ? 'selected' : ''}" data-action="select-cat" data-cat="${cat.id}" style="${styleSel}">
+              ${ICONS[cat.icon]}
+              <span class="category-btn-label">${cat.label}</span>
+            </button>`;
+        });
+        html += `
+                </div>
+              </div>
+              <button class="confirm-btn" data-action="confirm-add" ${!validAmount ? 'disabled' : ''}
+                style="background:${type === 'income' ? '#5B8266' : '#9A6240'}">Confirmer</button>
+            </div>
+          </div>`;
+      }
+
+      // ===== Modal: Menu =====
+      if (state.modal === 'menu') {
+        html += `
+          <div class="modal-backdrop" data-action="close-modal">
+            <div class="modal-sheet" data-stop>
+              <div class="modal-header">
+                <div>
+                  <p class="header-month">Options</p>
+                  <h3 class="modal-title">Menu</h3>
+                </div>
+                <button class="modal-close" data-action="close-modal">${ICONS.x}</button>
+              </div>`;
+
+        // Section Cloud
+        html += `<p class="menu-section-title">Synchronisation cloud</p>`;
+        if (state.user) {
+          html += `
+            <div class="menu-item-info">
+              <strong>Connecté</strong>
+              <span>${escapeHtml(state.user.email)}</span>
+            </div>
+            <div class="menu-list">
+              <button class="menu-item" data-action="manual-sync">${ICONS.refresh}<span>Synchroniser maintenant</span></button>
+              <button class="menu-item menu-item-danger" data-action="ask-signout">${ICONS.logout}<span>Se déconnecter</span></button>
+            </div>`;
+        } else if (getCfg()) {
+          html += `
+            <div class="menu-list">
+              <button class="menu-item" data-action="open-auth">${ICONS.cloud}<span>Se connecter / Créer un compte</span></button>
+              <button class="menu-item" data-action="open-cloud-setup">${ICONS.refresh}<span>Modifier la configuration cloud</span></button>
+              <button class="menu-item menu-item-danger" data-action="disable-cloud">${ICONS.cloudOff}<span>Désactiver le cloud</span></button>
+            </div>`;
+        } else {
+          html += `
+            <div class="menu-list">
+              <button class="menu-item" data-action="open-cloud-setup">${ICONS.cloud}<span>Activer la synchronisation cloud</span></button>
+            </div>`;
+        }
+
+        html += `<p class="menu-section-title">Données</p>
+            <div class="menu-list">
+              <button class="menu-item" data-action="export">${ICONS.download}<span>Exporter en JSON</span></button>
+              <button class="menu-item" data-action="import">${ICONS.upload}<span>Importer un JSON</span></button>
+              <button class="menu-item menu-item-danger" data-action="ask-clear">${ICONS.trash}<span>Tout effacer (local)</span></button>
+            </div>
+            <input type="file" id="file-input" accept=".json" style="display:none" />
+          </div>
+        </div>`;
+      }
+
+      // ===== Modal: Cloud setup =====
+      if (state.modal === 'cloud-setup') {
+        const cfg = getCfg() || { url: '', key: '' };
+        html += `
+          <div class="modal-backdrop" data-action="close-modal">
+            <div class="modal-sheet" data-stop>
+              <div class="modal-header">
+                <div>
+                  <p class="header-month">Configuration</p>
+                  <h3 class="modal-title">Cloud Supabase</h3>
+                </div>
+                <button class="modal-close" data-action="close-modal">${ICONS.x}</button>
+              </div>
+              <p class="field-help" style="margin-bottom:1.25rem; color:#57534e">
+                1. Crée un compte gratuit sur <strong>supabase.com</strong><br>
+                2. Crée un nouveau projet<br>
+                3. Va dans <strong>SQL Editor</strong> et exécute le script <strong>setup.sql</strong> fourni<br>
+                4. Va dans <strong>Settings → API</strong> et copie ton URL + clé "anon"<br>
+                5. Colle-les ci-dessous
+              </p>
+              <div class="field-group">
+                <label class="field-label">URL du projet</label>
+                <input type="text" class="text-input" id="cloud-url" value="${escapeHtml(state.cloudForm.url || cfg.url || '')}"
+                       placeholder="https://xxxxxx.supabase.co" autocomplete="off" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Clé anon (public)</label>
+                <input type="text" class="text-input" id="cloud-key" value="${escapeHtml(state.cloudForm.key || cfg.key || '')}"
+                       placeholder="eyJhbGc..." autocomplete="off" />
+                <p class="field-help">Cette clé est faite pour être publique — elle n'expose que ce que tes règles RLS autorisent.</p>
+              </div>
+              ${state.authError ? `<div class="auth-error">${escapeHtml(state.authError)}</div>` : ''}
+              <button class="confirm-btn" data-action="save-cloud-config" style="background:#2D2A24">Enregistrer</button>
+            </div>
+          </div>`;
+      }
+
+      // ===== Modal: Auth (login/signup) =====
+      if (state.modal === 'auth') {
+        const isSignup = state.authMode === 'signup';
+        html += `
+          <div class="modal-backdrop" data-action="close-modal">
+            <div class="modal-sheet" data-stop>
+              <div class="modal-header">
+                <div>
+                  <p class="header-month">Cloud</p>
+                  <h3 class="modal-title">${isSignup ? 'Créer un compte' : 'Connexion'}</h3>
+                </div>
+                <button class="modal-close" data-action="close-modal">${ICONS.x}</button>
+              </div>
+              <div class="auth-tabs">
+                <button class="auth-tab ${!isSignup ? 'active' : ''}" data-action="auth-tab" data-mode="signin">Connexion</button>
+                <button class="auth-tab ${isSignup ? 'active' : ''}" data-action="auth-tab" data-mode="signup">Inscription</button>
+              </div>
+              ${state.authError ? `<div class="auth-error">${escapeHtml(state.authError)}</div>` : ''}
+              ${state.authSuccess ? `<div class="auth-success">${escapeHtml(state.authSuccess)}</div>` : ''}
+              <div class="field-group">
+                <label class="field-label">Email</label>
+                <input type="email" class="text-input" id="auth-email" value="${escapeHtml(state.authForm.email)}"
+                       placeholder="ton@email.com" autocomplete="email" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Mot de passe</label>
+                <input type="password" class="text-input" id="auth-password" value="${escapeHtml(state.authForm.password)}"
+                       placeholder="••••••••" autocomplete="${isSignup ? 'new-password' : 'current-password'}" />
+                ${isSignup ? '<p class="field-help">Minimum 6 caractères.</p>' : ''}
+              </div>
+              <button class="confirm-btn" data-action="auth-submit" ${state.authLoading ? 'disabled' : ''}
+                      style="background:#2D2A24">
+                ${state.authLoading ? 'Patientez…' : (isSignup ? 'Créer le compte' : 'Se connecter')}
+              </button>
+            </div>
+          </div>`;
+      }
+
+      // ===== Confirm dialogs =====
+      if (state.confirmDelete) {
+        html += `
+          <div class="confirm-backdrop" data-action="close-confirm">
+            <div class="confirm-dialog" data-stop>
+              <h3 class="confirm-title">Supprimer ?</h3>
+              <p class="confirm-msg">Cette opération sera supprimée${state.user ? ' de tous tes appareils' : ''}.</p>
+              <div class="confirm-actions">
+                <button class="btn-cancel" data-action="close-confirm">Annuler</button>
+                <button class="btn-danger" data-action="confirm-delete">Supprimer</button>
+              </div>
+            </div>
+          </div>`;
+      }
+      if (state.confirmClear) {
+        html += `
+          <div class="confirm-backdrop" data-action="close-clear">
+            <div class="confirm-dialog" data-stop>
+              <h3 class="confirm-title">Tout effacer en local ?</h3>
+              <p class="confirm-msg">Le cache local sera vidé. ${state.user ? 'Tes données cloud ne seront PAS supprimées — elles seront re-téléchargées à la prochaine sync.' : 'Cette action est irréversible.'}</p>
+              <div class="confirm-actions">
+                <button class="btn-cancel" data-action="close-clear">Annuler</button>
+                <button class="btn-danger" data-action="confirm-clear">Effacer</button>
+              </div>
+            </div>
+          </div>`;
+      }
+      if (state.confirmSignOut) {
+        html += `
+          <div class="confirm-backdrop" data-action="close-signout">
+            <div class="confirm-dialog" data-stop>
+              <h3 class="confirm-title">Se déconnecter ?</h3>
+              <p class="confirm-msg">Tu reviendras en mode local. Tes données restent stockées dans le cloud et sur cet appareil.</p>
+              <div class="confirm-actions">
+                <button class="btn-cancel" data-action="close-signout">Annuler</button>
+                <button class="btn-danger" data-action="confirm-signout">Se déconnecter</button>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      app.innerHTML = html;
+
+      // Bind text input syncing (sans re-render à chaque touche)
+      const amountEl = document.getElementById('amount-input');
+      if (amountEl) {
+        amountEl.addEventListener('input', (e) => {
+          state.form.amount = e.target.value.replace(/[^0-9.,]/g, '');
+          e.target.value = state.form.amount;
+          const btn = document.querySelector('[data-action="confirm-add"]');
+          if (btn) btn.disabled = !(parseFloat(state.form.amount.replace(',', '.')) > 0);
+        });
+      }
+      const descEl = document.getElementById('desc-input');
+      if (descEl) descEl.addEventListener('input', (e) => { state.form.description = e.target.value; });
+
+      const cloudUrlEl = document.getElementById('cloud-url');
+      if (cloudUrlEl) cloudUrlEl.addEventListener('input', (e) => { state.cloudForm.url = e.target.value; });
+      const cloudKeyEl = document.getElementById('cloud-key');
+      if (cloudKeyEl) cloudKeyEl.addEventListener('input', (e) => { state.cloudForm.key = e.target.value; });
+
+      const authEmailEl = document.getElementById('auth-email');
+      if (authEmailEl) authEmailEl.addEventListener('input', (e) => { state.authForm.email = e.target.value; });
+      const authPwdEl = document.getElementById('auth-password');
+      if (authPwdEl) authPwdEl.addEventListener('input', (e) => { state.authForm.password = e.target.value; });
+    }
+
+    /* ==========================================================
+       10) ÉVÉNEMENTS
+       ========================================================== */
+    document.addEventListener('click', async (e) => {
+      const target = e.target.closest('[data-action]');
+      if (!target) return;
+      const action = target.dataset.action;
+
+      // Ouvrir modale ajout
+      if (action === 'open-modal') {
+        const type = target.dataset.type;
+        state.form = { amount: '', description: '', category: type === 'income' ? 'salaire' : 'alimentation' };
+        setState({ modal: type });
+      }
+
+      else if (action === 'close-modal') {
+        if (target.classList.contains('modal-backdrop') || target.classList.contains('modal-close') || target.tagName === 'BUTTON') {
+          setState({ modal: null, authError: null, authSuccess: null });
+        }
+      }
+
+      else if (action === 'open-menu') {
+        setState({ modal: 'menu' });
+      }
+
+      else if (action === 'select-cat') {
+        state.form.category = target.dataset.cat;
+        render();
+      }
+
+      else if (action === 'confirm-add') {
+        const num = parseFloat(state.form.amount.replace(',', '.'));
+        if (isNaN(num) || num <= 0) return;
+        const type = state.modal;
+        const newTx = {
+          id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
+          type,
+          amount: num,
+          category: state.form.category,
+          description: state.form.description.trim() || findCat(type, state.form.category).label,
+          date: new Date().toISOString(),
+          deleted_at: null,
+          synced: false,
+        };
+        await dbPut(newTx);
+        await reloadFromLocal();
+        setState({ modal: null });
+        // Push au cloud (en arrière plan)
+        if (state.user) syncEngine.pushChange(newTx);
+      }
+
+      else if (action === 'ask-delete') {
+        setState({ confirmDelete: target.dataset.id });
+      }
+      else if (action === 'close-confirm') {
+        setState({ confirmDelete: null });
+      }
+      else if (action === 'confirm-delete') {
+        const id = state.confirmDelete;
+        // Soft delete pour la sync
+        const all = await dbGetAll();
+        const tx = all.find(t => t.id === id);
+        if (tx) {
+          if (state.user) {
+            const updated = { ...tx, deleted_at: new Date().toISOString(), synced: false };
+            await dbPut(updated);
+            syncEngine.pushChange(updated);
+          } else {
+            // En mode local : suppression dure (pas de sync à faire)
+            const db = await openDB();
+            await new Promise((res, rej) => {
+              const t2 = db.transaction(STORE, 'readwrite');
+              t2.objectStore(STORE).delete(id);
+              t2.oncomplete = res; t2.onerror = () => rej(t2.error);
+            });
+          }
+        }
+        await reloadFromLocal();
+        setState({ confirmDelete: null });
+      }
+
+      // ===== Cloud =====
+      else if (action === 'open-cloud-setup') {
+        const cfg = getCfg();
+        state.cloudForm = { url: cfg?.url || '', key: cfg?.key || '' };
+        state.authError = null;
+        setState({ modal: 'cloud-setup' });
+      }
+      else if (action === 'dismiss-welcome') {
+        localStorage.setItem('budget-welcome-dismissed', '1');
+        setState({ welcomeBannerDismissed: true });
+      }
+      else if (action === 'save-cloud-config') {
+        const url = state.cloudForm.url.trim();
+        const key = state.cloudForm.key.trim();
+        if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
+          state.authError = 'L\'URL doit ressembler à https://xxx.supabase.co';
+          render(); return;
+        }
+        if (!key || key.length < 30) {
+          state.authError = 'La clé "anon" semble invalide.';
+          render(); return;
+        }
+        setCfg(url, key);
+        state.authError = null;
+        await initSupabaseClient();
+        if (state.user) {
+          // Déjà connecté
+          showToast('Cloud configuré !');
+          setState({ modal: 'menu' });
+          syncEngine.fullSync();
+        } else {
+          // Demander connexion
+          state.authMode = 'signin';
+          state.authForm = { email: '', password: '' };
+          setState({ modal: 'auth' });
+        }
+      }
+      else if (action === 'open-auth') {
+        if (!supabase) await initSupabaseClient();
+        if (!supabase) { state.authError = 'Configure d\'abord le cloud.'; render(); return; }
+        state.authMode = 'signin';
+        state.authForm = { email: '', password: '' };
+        state.authError = null; state.authSuccess = null;
+        setState({ modal: 'auth' });
+      }
+      else if (action === 'auth-tab') {
+        state.authMode = target.dataset.mode;
+        state.authError = null; state.authSuccess = null;
+        render();
+      }
+      else if (action === 'auth-submit') {
+        if (!supabase) { state.authError = 'Cloud non configuré.'; render(); return; }
+        const { email, password } = state.authForm;
+        if (!email || !password) { state.authError = 'Remplis tous les champs.'; render(); return; }
+        if (state.authMode === 'signup' && password.length < 6) {
+          state.authError = 'Mot de passe : 6 caractères minimum.'; render(); return;
+        }
+        state.authLoading = true; state.authError = null; render();
+        try {
+          if (state.authMode === 'signup') {
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) throw error;
+            if (data.session) {
+              // Connexion immédiate (si confirmation email désactivée)
+              showToast('Compte créé !');
+              setState({ modal: null, authLoading: false });
+            } else {
+              // Confirmation email requise
+              state.authSuccess = 'Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis reconnecte-toi.';
+              state.authMode = 'signin';
+              state.authForm.password = '';
+              setState({ authLoading: false });
+            }
+          } else {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            showToast('Connecté !');
+            setState({ modal: null, authLoading: false });
+          }
+        } catch (err) {
+          state.authError = err.message || 'Erreur d\'authentification';
+          state.authLoading = false;
+          render();
+        }
+      }
+      else if (action === 'manual-sync') {
+        await syncEngine.fullSync();
+        showToast(state.syncStatus === 'error' ? 'Échec de la sync' : 'Synchronisé !');
+      }
+      else if (action === 'ask-signout') {
+        setState({ modal: null, confirmSignOut: true });
+      }
+      else if (action === 'close-signout') {
+        setState({ confirmSignOut: false });
+      }
+      else if (action === 'confirm-signout') {
+        if (supabase) await supabase.auth.signOut();
+        unsubscribeRealtime();
+        setState({ confirmSignOut: false, syncStatus: 'local' });
+      }
+      else if (action === 'disable-cloud') {
+        if (supabase) await supabase.auth.signOut();
+        unsubscribeRealtime();
+        clearCfg();
+        supabase = null;
+        state.user = null;
+        setState({ modal: null, syncStatus: 'local' });
+        showToast('Cloud désactivé');
+      }
+
+      // ===== Export / Import / Clear =====
+      else if (action === 'export') {
+        const data = JSON.stringify(state.transactions, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `budget-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      else if (action === 'import') {
+        const fi = document.getElementById('file-input');
+        fi.onchange = async (ev) => {
+          const file = ev.target.files[0]; if (!file) return;
+          try {
+            const items = JSON.parse(await file.text());
+            if (!Array.isArray(items)) throw new Error('Format invalide');
+            const normalized = items.map(it => ({
+              ...it,
+              synced: false,
+              deleted_at: it.deleted_at || null,
+            }));
+            await dbBulkPut(normalized);
+            await reloadFromLocal();
+            setState({ modal: null });
+            showToast(`${items.length} opération(s) importée(s)`);
+            if (state.user) syncEngine.fullSync();
+          } catch (err) {
+            showToast('Fichier invalide');
+          }
+        };
+        fi.click();
+      }
+      else if (action === 'ask-clear') {
+        setState({ modal: null, confirmClear: true });
+      }
+      else if (action === 'close-clear') {
+        setState({ confirmClear: false });
+      }
+      else if (action === 'confirm-clear') {
+        await dbClear();
+        await reloadFromLocal();
+        setState({ confirmClear: false });
+        showToast('Cache local vidé');
+        if (state.user) syncEngine.fullSync(); // re-télécharge depuis le cloud
+      }
+    });
+
+    /* ==========================================================
+       11) ÉVÉNEMENTS RÉSEAU + VISIBILITÉ (sync auto)
+       ========================================================== */
+    window.addEventListener('online', () => {
+      if (state.user) syncEngine.fullSync();
+    });
+    window.addEventListener('offline', () => {
+      state.syncStatus = state.user ? 'offline' : 'local';
+      render();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && state.user && navigator.onLine) {
+        syncEngine.fullSync();
+      }
+    });
+
+    /* ==========================================================
+       12) SERVICE WORKER
+       ========================================================== */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    /* ==========================================================
+       13) INITIALISATION
+       ========================================================== */
+    (async function init() {
+      try {
+        await reloadFromLocal();
+      } catch (e) {
+        console.error('Local DB error', e);
+      }
+
+      // Si une config cloud est sauvegardée, init Supabase + restore session
+      if (getCfg()) {
+        try {
+          await initSupabaseClient();
+          if (state.user) {
+            subscribeRealtime();
+            // Sync en arrière-plan, ne bloque pas le rendu
+            syncEngine.fullSync();
+          }
+        } catch (e) {
+          console.error('Cloud init error', e);
+        }
+      }
+
+      setState({ loading: false });
+    })();
+  </script>
+</body>
+</html>
