@@ -77,7 +77,8 @@ create table if not exists public.loans (
   user_id      uuid         references auth.users(id) on delete cascade not null default auth.uid(),
   amount       numeric      not null check (amount > 0),
   lender       text         not null,
-  lender_type  text         not null check (lender_type in ('marche', 'famille')),
+  lender_type  text         not null check (lender_type in ('marche', 'famille', 'donne')),
+  direction    text         not null default 'received' check (direction in ('received', 'given')),
   description  text,
   date         timestamptz  not null default now(),
   status       text         not null default 'actif' check (status in ('actif', 'rembourse')),
@@ -104,3 +105,17 @@ create trigger loans_updated_at
   for each row execute function public.handle_updated_at();
 
 alter publication supabase_realtime add table public.loans;
+
+-- ============================================================
+-- Migration : ajout de la colonne direction (si table déjà créée)
+-- ============================================================
+alter table public.loans
+  add column if not exists direction text not null default 'received'
+    check (direction in ('received', 'given'));
+
+-- Mise à jour de la contrainte lender_type pour accepter 'donne'
+alter table public.loans
+  drop constraint if exists loans_lender_type_check;
+alter table public.loans
+  add constraint loans_lender_type_check
+    check (lender_type in ('marche', 'famille', 'donne'));

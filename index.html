@@ -276,6 +276,7 @@
     .loan-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.25rem; }
     .loan-icon.marche { background: rgba(196,155,91,0.15); }
     .loan-icon.famille { background: rgba(91,130,102,0.15); }
+    .loan-icon.donne { background: rgba(196,155,91,0.2); }
     .loan-content { flex: 1; min-width: 0; }
     .loan-lender { font-size: 0.875rem; font-weight: 500; color: #1c1917; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .loan-meta { font-size: 0.75rem; color: #78716c; }
@@ -712,11 +713,13 @@
         { id: 'factures', label: 'Factures', icon: 'receipt', color: '#6B7B8C' },
         { id: 'epargne', label: 'Épargne', icon: 'piggy', color: '#5B8266' },
         { id: 'remboursement', label: 'Remboursement', icon: 'loan', color: '#5C5A8E' },
+        { id: 'pret-donne', label: 'Prêt donné', icon: 'loan', color: '#C49B5B' },
         { id: 'autres', label: 'Autres', icon: 'more', color: '#7A6A5A' },
       ],
       income: [
         { id: 'salaire', label: 'Salaire', icon: 'briefcase', color: '#5B8266' },
         { id: 'pret-recu', label: 'Prêt reçu', icon: 'loan', color: '#5C5A8E' },
+        { id: 'remboursement-recu', label: 'Remboursement reçu', icon: 'loan', color: '#7C8B5A' },
         { id: 'autres-revenus', label: 'Autres', icon: 'more', color: '#7A6A5A' },
       ],
     };
@@ -744,7 +747,7 @@
       confirmRepay: null,
       confirmDeleteLoan: null,
       form: { amount: '', category: '', description: '' },
-      loanForm: { amount: '', lender: '', lenderType: 'famille', description: '' },
+      loanForm: { amount: '', lender: '', lenderType: 'famille', direction: 'received', description: '' },
       currentPage: 'budget',     // 'budget' | 'stats' | 'compare'
       statsPeriod: 'month',      // 'month' | 'pick' | '3months' | '6months' | 'year'
       statsPickedMonth: new Date().toISOString().slice(0, 7), // 'YYYY-MM'
@@ -1180,57 +1183,92 @@
           <div class="actions">
             <button class="action-btn action-income" data-action="open-modal" data-type="income">${ICONS.plus}<span>Revenu</span></button>
             <button class="action-btn action-expense" data-action="open-modal" data-type="expense">${ICONS.plus}<span>Dépense</span></button>
-            <button class="action-btn action-loan" data-action="open-loan-modal">${ICONS.loan}<span>Prêt reçu</span></button>
+            <button class="action-btn action-loan" data-action="open-loan-modal">${ICONS.loan}<span>Prêt</span></button>
           </div>
       `;
 
       // Section prêts
       if (state.loans.length > 0) {
-        const activeLoans = state.loans.filter(l => l.status === 'actif');
-        const totalDue = activeLoans.reduce((s, l) => s + l.amount, 0);
-        html += `<section class="section">
-          <div class="section-header">
-            <h2 class="section-title" style="margin-bottom:0">Mes prêts</h2>
-            <span class="section-count">${activeLoans.length} actif${activeLoans.length > 1 ? 's' : ''}</span>
-          </div>`;
-        if (activeLoans.length > 0) {
-          html += `<div class="loan-summary">
-            <div>
-              <p class="loan-summary-label">Total à rembourser</p>
-              <p class="loan-summary-amount num">${formatMoney(totalDue)} <span style="font-size:0.85rem;color:#C5C3E8">DH</span></p>
-            </div>
-            ${ICONS.loanBig}
-          </div>`;
-        }
-        const sortedLoans = [...state.loans].sort((a, b) => {
-          if (a.status === 'actif' && b.status !== 'actif') return -1;
-          if (b.status === 'actif' && a.status !== 'actif') return 1;
-          return new Date(b.date) - new Date(a.date);
-        });
-        html += '<div class="tx-list">';
-        sortedLoans.forEach(loan => {
+        const receivedLoans = state.loans.filter(l => l.direction !== 'given');
+        const givenLoans    = state.loans.filter(l => l.direction === 'given');
+        const activeReceived = receivedLoans.filter(l => l.status === 'actif');
+        const activeGiven    = givenLoans.filter(l => l.status === 'actif');
+        const totalDue      = activeReceived.reduce((s, l) => s + l.amount, 0);
+        const totalToRecover = activeGiven.reduce((s, l) => s + l.amount, 0);
+
+        function loanItemHtml(loan) {
           const isActif = loan.status === 'actif';
-          const emoji = loan.lenderType === 'marche' ? '🏪' : '🤝';
-          const typeLabel = loan.lenderType === 'marche' ? 'Marché / Boutique' : 'Famille / Proche';
+          const isGiven = loan.direction === 'given';
+          let emoji, typeLabel, iconClass;
+          if (isGiven) {
+            emoji = '💸'; typeLabel = 'Prêt donné'; iconClass = 'donne';
+          } else if (loan.lenderType === 'marche') {
+            emoji = '🏪'; typeLabel = 'Marché / Boutique'; iconClass = 'marche';
+          } else {
+            emoji = '🤝'; typeLabel = 'Famille / Proche'; iconClass = 'famille';
+          }
           const desc = loan.description ? ` · ${escapeHtml(loan.description)}` : '';
-          html += `
+          const statusLabel = isActif ? (isGiven ? 'À récupérer' : 'À rembourser') : (isGiven ? 'Récupéré' : 'Remboursé');
+          const repayLabel  = isGiven ? '✓ Remboursé par lui' : '✓ Remboursé';
+          return `
             <div class="loan-item${isActif ? '' : ' loan-paid'}">
-              <div class="loan-icon ${loan.lenderType}">${emoji}</div>
+              <div class="loan-icon ${iconClass}">${emoji}</div>
               <div class="loan-content">
                 <p class="loan-lender">${escapeHtml(loan.lender)}</p>
                 <p class="loan-meta">${typeLabel} · ${formatDate(loan.date)}${desc}</p>
               </div>
               <div class="loan-right">
-                <span class="loan-amount ${loan.status}">${formatMoney(loan.amount)}</span>
-                <span class="loan-status-badge ${loan.status}">${isActif ? 'À rembourser' : 'Remboursé'}</span>
+                <span class="loan-amount ${loan.status}" style="${isGiven && isActif ? 'color:#C49B5B' : ''}">${formatMoney(loan.amount)}</span>
+                <span class="loan-status-badge ${loan.status}">${statusLabel}</span>
                 <div class="loan-actions-row">
-                  ${isActif ? '<button class="loan-btn pay" data-action="ask-repay" data-id="' + loan.id + '">✓ Remboursé</button>' : ''}
+                  ${isActif ? '<button class="loan-btn pay" data-action="ask-repay" data-id="' + loan.id + '">' + repayLabel + '</button>' : ''}
                   <button class="loan-btn del" data-action="ask-delete-loan" data-id="${loan.id}">${ICONS.trash}</button>
                 </div>
               </div>
             </div>`;
-        });
-        html += '</div></section>';
+        }
+
+        html += `<section class="section"><h2 class="section-title">Mes prêts</h2>`;
+
+        if (receivedLoans.length > 0) {
+          html += `<p style="font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#78716c;margin-bottom:0.6rem">Prêts reçus</p>`;
+          if (activeReceived.length > 0) {
+            html += `<div class="loan-summary">
+              <div>
+                <p class="loan-summary-label">Total à rembourser</p>
+                <p class="loan-summary-amount num">${formatMoney(totalDue)} <span style="font-size:0.85rem;color:#C5C3E8">DH</span></p>
+              </div>
+              ${ICONS.loanBig}
+            </div>`;
+          }
+          const sorted = [...receivedLoans].sort((a, b) => {
+            if (a.status === 'actif' && b.status !== 'actif') return -1;
+            if (b.status === 'actif' && a.status !== 'actif') return 1;
+            return new Date(b.date) - new Date(a.date);
+          });
+          html += '<div class="tx-list">' + sorted.map(loanItemHtml).join('') + '</div>';
+        }
+
+        if (givenLoans.length > 0) {
+          html += `<p style="font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#78716c;margin:1rem 0 0.6rem">Prêts donnés</p>`;
+          if (activeGiven.length > 0) {
+            html += `<div class="loan-summary" style="background:linear-gradient(135deg,#7A5A2A 0%,#C49B5B 100%)">
+              <div>
+                <p class="loan-summary-label" style="color:#FDE5A8">Total à récupérer</p>
+                <p class="loan-summary-amount num">${formatMoney(totalToRecover)} <span style="font-size:0.85rem;color:#FDE5A8">DH</span></p>
+              </div>
+              ${ICONS.loanBig}
+            </div>`;
+          }
+          const sorted = [...givenLoans].sort((a, b) => {
+            if (a.status === 'actif' && b.status !== 'actif') return -1;
+            if (b.status === 'actif' && a.status !== 'actif') return 1;
+            return new Date(b.date) - new Date(a.date);
+          });
+          html += '<div class="tx-list">' + sorted.map(loanItemHtml).join('') + '</div>';
+        }
+
+        html += '</section>';
       }
 
       if (sortedCats.length > 0) {
@@ -1484,24 +1522,35 @@
       // ===== Modal: Ajouter un prêt =====
       if (state.modal === 'add-loan') {
         const f = state.loanForm;
+        const isReceived = f.direction !== 'given';
         const validLoan = parseFloat((f.amount || '').replace(',', '.')) > 0 && f.lender.trim().length > 0;
+        const lenderPlaceholder = isReceived
+          ? (f.lenderType === 'marche' ? 'Épicerie du coin' : 'Youssef (frère)')
+          : 'ami, collègue…';
         html += `
           <div class="modal-backdrop" data-action="close-modal">
             <div class="modal-sheet" data-stop>
               <div class="modal-header">
                 <div>
                   <p class="header-month">Nouveau</p>
-                  <h3 class="modal-title">Prêt reçu</h3>
+                  <h3 class="modal-title">${isReceived ? 'Prêt reçu' : 'Prêt donné'}</h3>
                 </div>
                 <button class="modal-close" data-action="close-modal">${ICONS.x}</button>
               </div>
               <div class="field-group">
-                <label class="field-label">Montant</label>
-                <div class="amount-input">
-                  <input type="text" inputmode="decimal" id="loan-amount-input" value="${f.amount}" placeholder="0,00" autofocus />
-                  <span class="amount-currency">DH</span>
+                <label class="field-label">Direction du prêt</label>
+                <div class="loan-type-grid">
+                  <button class="loan-type-btn ${isReceived ? 'selected' : ''}" data-action="select-loan-direction" data-dir="received">
+                    <span class="type-icon">📥</span>
+                    <span class="type-label">J'ai reçu un prêt</span>
+                  </button>
+                  <button class="loan-type-btn ${!isReceived ? 'selected' : ''}" data-action="select-loan-direction" data-dir="given">
+                    <span class="type-icon">📤</span>
+                    <span class="type-label">J'ai prêté à quelqu'un</span>
+                  </button>
                 </div>
               </div>
+              ${isReceived ? `
               <div class="field-group">
                 <label class="field-label">Source du prêt</label>
                 <div class="loan-type-grid">
@@ -1514,11 +1563,18 @@
                     <span class="type-label">Famille / Proche</span>
                   </button>
                 </div>
+              </div>` : ''}
+              <div class="field-group">
+                <label class="field-label">Montant</label>
+                <div class="amount-input">
+                  <input type="text" inputmode="decimal" id="loan-amount-input" value="${f.amount}" placeholder="0,00" autofocus />
+                  <span class="amount-currency">DH</span>
+                </div>
               </div>
               <div class="field-group">
-                <label class="field-label">Nom du prêteur</label>
+                <label class="field-label">${isReceived ? 'Nom du prêteur' : 'Nom de l\'emprunteur'}</label>
                 <input type="text" class="text-input" id="loan-lender-input" value="${escapeHtml(f.lender)}"
-                       placeholder="${f.lenderType === 'marche' ? 'Épicerie du coin' : 'Mohammed (frère)'}" />
+                       placeholder="${lenderPlaceholder}" />
               </div>
               <div class="field-group">
                 <label class="field-label">Description (optionnel)</label>
@@ -1526,7 +1582,7 @@
                        placeholder="Motif du prêt…" />
               </div>
               <button class="confirm-btn" data-action="confirm-add-loan" ${!validLoan ? 'disabled' : ''}
-                      style="background:#5C5A8E">Enregistrer le prêt</button>
+                      style="background:${isReceived ? '#5C5A8E' : '#9A6240'}">Enregistrer</button>
             </div>
           </div>`;
       }
@@ -1887,21 +1943,27 @@
 
       // ===== Prêts =====
       else if (action === 'open-loan-modal') {
-        state.loanForm = { amount: '', lender: '', lenderType: 'famille', description: '' };
+        state.loanForm = { amount: '', lender: '', lenderType: 'famille', direction: 'received', description: '' };
         setState({ modal: 'add-loan' });
       }
       else if (action === 'select-loan-type') {
         state.loanForm.lenderType = target.dataset.type;
         render();
       }
+      else if (action === 'select-loan-direction') {
+        state.loanForm.direction = target.dataset.dir;
+        render();
+      }
       else if (action === 'confirm-add-loan') {
         const num = parseFloat(state.loanForm.amount.replace(',', '.'));
         if (isNaN(num) || num <= 0 || !state.loanForm.lender.trim()) return;
+        const isGiven = state.loanForm.direction === 'given';
         const newLoan = {
           id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
           amount: num,
           lender: state.loanForm.lender.trim(),
-          lenderType: state.loanForm.lenderType,
+          lenderType: isGiven ? 'donne' : state.loanForm.lenderType,
+          direction: isGiven ? 'given' : 'received',
           description: state.loanForm.description.trim(),
           date: new Date().toISOString(),
           status: 'actif',
@@ -1910,24 +1972,44 @@
         };
         await loanPut(newLoan);
 
-        // Ajouter automatiquement un revenu "Prêt reçu" au solde
-        const loanIncomeTx = {
-          id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
-          type: 'income',
-          amount: num,
-          category: 'pret-recu',
-          description: 'Prêt reçu — ' + newLoan.lender,
-          date: newLoan.date,
-          deleted_at: null,
-          synced: false,
-        };
-        await dbPut(loanIncomeTx);
-        if (state.user) syncEngine.pushChange(loanIncomeTx);
+        if (isGiven) {
+          // Prêt donné → débiter le solde
+          const tx = {
+            id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
+            type: 'expense',
+            amount: num,
+            category: 'pret-donne',
+            description: 'Prêt donné — ' + newLoan.lender,
+            date: newLoan.date,
+            deleted_at: null,
+            synced: false,
+          };
+          await dbPut(tx);
+          if (state.user) syncEngine.pushChange(tx);
+          showToast('Prêt enregistré — montant débité du solde');
+        } else if (state.loanForm.lenderType === 'famille') {
+          // Prêt reçu de famille/proche → créditer le solde
+          const tx = {
+            id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
+            type: 'income',
+            amount: num,
+            category: 'pret-recu',
+            description: 'Prêt reçu — ' + newLoan.lender,
+            date: newLoan.date,
+            deleted_at: null,
+            synced: false,
+          };
+          await dbPut(tx);
+          if (state.user) syncEngine.pushChange(tx);
+          showToast('Prêt enregistré — montant crédité au solde');
+        } else {
+          // Prêt reçu du marché → aucune transaction (marchandise, pas d'argent)
+          showToast('Prêt enregistré');
+        }
 
         await reloadFromLocal();
         setState({ modal: null });
         if (state.user) syncEngine.loanPushChange(newLoan);
-        showToast('Prêt enregistré — solde mis à jour');
       }
       else if (action === 'ask-repay') {
         setState({ confirmRepay: target.dataset.id });
@@ -1940,18 +2022,17 @@
         const all = await loanGetAll();
         const loan = all.find(l => l.id === id);
         if (loan) {
-          // Marquer le prêt comme remboursé
           const updated = { ...loan, status: 'rembourse', synced: false };
           await loanPut(updated);
           if (state.user) syncEngine.loanPushChange(updated);
 
-          // Créer automatiquement une dépense de remboursement
+          const isGiven = loan.direction === 'given';
           const repayTx = {
             id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
-            type: 'expense',
+            type: isGiven ? 'income' : 'expense',
             amount: loan.amount,
-            category: 'remboursement',
-            description: 'Remboursement — ' + loan.lender,
+            category: isGiven ? 'remboursement-recu' : 'remboursement',
+            description: (isGiven ? 'Remboursement reçu — ' : 'Remboursement — ') + loan.lender,
             date: new Date().toISOString(),
             deleted_at: null,
             synced: false,
@@ -1961,7 +2042,8 @@
         }
         await reloadFromLocal();
         setState({ confirmRepay: null });
-        showToast('Remboursé — dépense débitée ✓');
+        const isGivenLoan = loan && loan.direction === 'given';
+        showToast(isGivenLoan ? 'Remboursé — montant crédité ✓' : 'Remboursé — dépense débitée ✓');
       }
       else if (action === 'ask-delete-loan') {
         setState({ confirmDeleteLoan: target.dataset.id });
