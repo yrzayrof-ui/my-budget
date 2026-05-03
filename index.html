@@ -241,6 +241,19 @@
     .stat-bar-fill { height: 100%; border-radius: 999px; }
     .stats-empty { text-align: center; padding: 2rem 0; color: #a8a29e; font-size: 0.875rem; }
 
+    /* Membres famille */
+    .family-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .family-item { display: flex; align-items: center; gap: 0.75rem; background: #f9f7f3; border-radius: 0.875rem; padding: 0.75rem 1rem; }
+    .family-avatar { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem; }
+    .family-name { flex: 1; font-size: 0.9rem; font-weight: 500; color: #1c1917; }
+    .family-spent { font-family: 'Fraunces', Georgia, serif; font-size: 0.85rem; font-variant-numeric: tabular-nums; color: #57534e; margin-right: 0.5rem; }
+    .family-del { background: none; border: none; cursor: pointer; color: #d6d3d1; padding: 0.25rem; display: flex; align-items: center; }
+    .family-del:active { color: #B85450; }
+    .family-add-row { display: flex; gap: 0.5rem; }
+    .family-add-row .text-input { flex: 1; }
+    .family-add-btn { background: #2D2A24; color: white; border: none; border-radius: 0.875rem; padding: 0 1.1rem; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .family-empty { text-align: center; color: #a8a29e; font-size: 0.82rem; padding: 1.25rem 0; }
+
     /* Page scanner facture */
     @keyframes spin { to { transform: rotate(360deg); } }
     .scan-hero { display: flex; flex-direction: column; align-items: center; gap: 0.875rem; padding: 1.75rem 0 1.5rem; text-align: center; }
@@ -716,6 +729,7 @@
       refresh: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>',
       download: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>',
       upload: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>',
+      person: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
       loan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
       navBudget: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v0"/><circle cx="18" cy="14" r="2"/></svg>',
       navStats: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 16V10M12 16V7M17 16v-4"/></svg>',
@@ -749,8 +763,29 @@
         { id: 'autres-revenus', label: 'Autres', icon: 'more', color: '#7A6A5A' },
       ],
     };
+    const FAMILY_STORAGE = 'budget-family-members';
+    const FAMILY_COLORS  = ['#E8A87C','#85C1E9','#82E0AA','#F1948A','#BB8FCE','#F7DC6F','#5DADE2','#48C9B0','#EC7063','#A9CCE3'];
+
+    function getFamilyMembers() {
+      try { return JSON.parse(localStorage.getItem(FAMILY_STORAGE) || '[]'); } catch { return []; }
+    }
+    function saveFamilyMembers(members) {
+      localStorage.setItem(FAMILY_STORAGE, JSON.stringify(members));
+    }
+    function expenseCats() {
+      const family = getFamilyMembers().map((m, i) => ({
+        id: 'famille-' + m.id,
+        label: m.name,
+        icon: 'person',
+        color: m.color || FAMILY_COLORS[i % FAMILY_COLORS.length],
+        isFamily: true,
+      }));
+      return [...CATEGORIES.expense, ...family];
+    }
+
     function findCat(type, id) {
-      return CATEGORIES[type].find(c => c.id === id) || CATEGORIES[type][CATEGORIES[type].length - 1];
+      const cats = type === 'expense' ? expenseCats() : CATEGORIES.income;
+      return cats.find(c => c.id === id) || cats[cats.length - 1];
     }
 
     /* ==========================================================
@@ -760,7 +795,7 @@
       transactions: [],
       loans: [],
       loading: true,
-      modal: null,         // 'income' | 'expense' | 'menu' | 'cloud-setup' | 'auth' | 'add-loan'
+      modal: null,         // 'income' | 'expense' | 'menu' | 'cloud-setup' | 'auth' | 'add-loan' | 'family'
       authMode: 'signin',  // 'signin' | 'signup'
       authForm: { email: '', password: '' },
       authError: null,
@@ -774,6 +809,7 @@
       confirmDeleteLoan: null,
       form: { amount: '', category: '', description: '' },
       loanForm: { amount: '', lender: '', lenderType: 'famille', direction: 'received', description: '' },
+      familyForm: { name: '' },
       currentPage: 'budget',     // 'budget' | 'stats' | 'compare' | 'scan'
       scanStep: 'idle',          // 'idle' | 'processing' | 'review'
       scanImage: null,
@@ -1482,7 +1518,7 @@
       // ===== Modal: Add transaction =====
       if (state.modal === 'income' || state.modal === 'expense') {
         const type = state.modal;
-        const cats = CATEGORIES[type];
+        const cats = type === 'expense' ? expenseCats() : CATEGORIES.income;
         const f = state.form;
         const validAmount = parseFloat((f.amount || '').replace(',', '.')) > 0;
         html += `
@@ -1584,6 +1620,16 @@
           <button class="confirm-btn" data-action="save-ai-key" style="margin-bottom:1.25rem;background:#2D2A24">
             ${savedAiKey ? '✓ Clé enregistrée — Mettre à jour' : 'Enregistrer la clé'}
           </button>`;
+
+        const familyCount = getFamilyMembers().length;
+        html += `
+          <p class="menu-section-title">Famille</p>
+          <div class="menu-list">
+            <button class="menu-item" data-action="open-family">
+              ${ICONS.person}
+              <span>Membres de la famille ${familyCount > 0 ? `<span style="background:#f0ece4;color:#57534e;border-radius:999px;padding:0.1rem 0.45rem;font-size:0.65rem;margin-left:0.3rem">${familyCount}</span>` : ''}</span>
+            </button>
+          </div>`;
 
         html += `<p class="menu-section-title">Données</p>
             <div class="menu-list">
@@ -1807,6 +1853,52 @@
           </div>`;
       }
 
+      // ===== Modal : Membres de la famille =====
+      if (state.modal === 'family') {
+        const members = getFamilyMembers();
+        // Calcul dépenses totales par membre (toutes périodes)
+        const memberSpent = {};
+        members.forEach(m => {
+          const catId = 'famille-' + m.id;
+          memberSpent[m.id] = state.transactions
+            .filter(t => t.type === 'expense' && t.category === catId)
+            .reduce((s, t) => s + t.amount, 0);
+        });
+
+        const memberListHtml = members.length ? members.map((m, i) => {
+          const color = m.color || FAMILY_COLORS[i % FAMILY_COLORS.length];
+          const spent = memberSpent[m.id] || 0;
+          return `
+            <div class="family-item">
+              <div class="family-avatar" style="background:${color}22;color:${color}">${ICONS.person}</div>
+              <span class="family-name">${escapeHtml(m.name)}</span>
+              ${spent > 0 ? `<span class="family-spent">${formatMoney(spent)} DH</span>` : ''}
+              <button class="family-del" data-action="delete-family-member" data-id="${m.id}" aria-label="Supprimer">${ICONS.trash}</button>
+            </div>`;
+        }).join('') : `<p class="family-empty">Aucun membre — ajoute ta famille ci-dessous</p>`;
+
+        html += `
+          <div class="modal-backdrop" data-action="close-modal">
+            <div class="modal-sheet" data-stop>
+              <div class="modal-header">
+                <div>
+                  <p class="header-month">Gestion</p>
+                  <h3 class="modal-title">Membres de la famille</h3>
+                </div>
+                <button class="modal-close" data-action="close-modal">${ICONS.x}</button>
+              </div>
+              <p class="field-help" style="margin-bottom:1rem">Chaque membre devient une catégorie de dépense. Tu peux suivre ce que tu dépenses pour chacun.</p>
+              <div class="family-list">${memberListHtml}</div>
+              <div class="family-add-row">
+                <input type="text" class="text-input" id="family-name-input"
+                       value="${escapeHtml(state.familyForm.name)}"
+                       placeholder="Prénom (ex : Sara, Papa…)" maxlength="30" />
+                <button class="family-add-btn" data-action="add-family-member">+ Ajouter</button>
+              </div>
+            </div>
+          </div>`;
+      }
+
       app.innerHTML = html;
 
       // Bind text input syncing (sans re-render à chaque touche)
@@ -1849,6 +1941,12 @@
       });
       const loanDescEl = document.getElementById('loan-desc-input');
       if (loanDescEl) loanDescEl.addEventListener('input', (e) => { state.loanForm.description = e.target.value; });
+
+      const familyNameEl = document.getElementById('family-name-input');
+      if (familyNameEl) {
+        familyNameEl.addEventListener('input', (e) => { state.familyForm.name = e.target.value; });
+        familyNameEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.querySelector('[data-action="add-family-member"]')?.click(); });
+      }
 
       const scanFileEl = document.getElementById('scan-file-input');
       if (scanFileEl) scanFileEl.addEventListener('change', (e) => {
@@ -2154,6 +2252,30 @@
         state.user = null;
         setState({ modal: null, syncStatus: 'local' });
         showToast('Cloud désactivé');
+      }
+      else if (action === 'open-family') {
+        state.familyForm = { name: '' };
+        setState({ modal: 'family' });
+      }
+      else if (action === 'add-family-member') {
+        const name = state.familyForm.name.trim();
+        if (!name) return;
+        const members = getFamilyMembers();
+        const i = members.length;
+        members.push({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          name,
+          color: FAMILY_COLORS[i % FAMILY_COLORS.length],
+        });
+        saveFamilyMembers(members);
+        state.familyForm.name = '';
+        render();
+      }
+      else if (action === 'delete-family-member') {
+        const id = target.dataset.id;
+        const members = getFamilyMembers().filter(m => m.id !== id);
+        saveFamilyMembers(members);
+        render();
       }
       else if (action === 'save-ai-key') {
         const input = document.getElementById('ai-key-input');
