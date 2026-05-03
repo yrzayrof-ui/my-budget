@@ -67,3 +67,40 @@ create trigger transactions_updated_at
 
 -- Activation de la réplication temps réel (pour la sync entre appareils)
 alter publication supabase_realtime add table public.transactions;
+
+
+-- ============================================================
+-- Table des prêts reçus
+-- ============================================================
+create table if not exists public.loans (
+  id           text         primary key,
+  user_id      uuid         references auth.users(id) on delete cascade not null default auth.uid(),
+  amount       numeric      not null check (amount > 0),
+  lender       text         not null,
+  lender_type  text         not null check (lender_type in ('marche', 'famille')),
+  description  text,
+  date         timestamptz  not null default now(),
+  status       text         not null default 'actif' check (status in ('actif', 'rembourse')),
+  deleted_at   timestamptz,
+  created_at   timestamptz  not null default now(),
+  updated_at   timestamptz  not null default now()
+);
+
+alter table public.loans enable row level security;
+
+drop policy if exists "Users can view own loans"   on public.loans;
+drop policy if exists "Users can insert own loans" on public.loans;
+drop policy if exists "Users can update own loans" on public.loans;
+drop policy if exists "Users can delete own loans" on public.loans;
+
+create policy "Users can view own loans"   on public.loans for select using (auth.uid() = user_id);
+create policy "Users can insert own loans" on public.loans for insert with check (auth.uid() = user_id);
+create policy "Users can update own loans" on public.loans for update using (auth.uid() = user_id);
+create policy "Users can delete own loans" on public.loans for delete using (auth.uid() = user_id);
+
+drop trigger if exists loans_updated_at on public.loans;
+create trigger loans_updated_at
+  before update on public.loans
+  for each row execute function public.handle_updated_at();
+
+alter publication supabase_realtime add table public.loans;

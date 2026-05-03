@@ -198,6 +198,104 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #78716c; }
     .toast { position: fixed; bottom: calc(1rem + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: #2D2A24; color: #F5F1E8; padding: 0.75rem 1.25rem; border-radius: 999px; font-size: 0.85rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 60; animation: slideUp 0.3s ease-out; }
+
+    /* Navigation bas de page */
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 28rem; background: white; border-top: 1px solid #ece8df; display: flex; z-index: 40; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); }
+    .nav-btn { flex: 1; border: none; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.625rem 0 calc(0.625rem + env(safe-area-inset-bottom)); cursor: pointer; font-family: inherit; font-size: 0.6rem; letter-spacing: 0.05em; text-transform: uppercase; color: #a8a29e; font-weight: 600; transition: color 0.15s; }
+    .nav-btn.active { color: #2D2A24; }
+    .nav-btn svg { opacity: 0.45; transition: opacity 0.15s; }
+    .nav-btn.active svg { opacity: 1; }
+
+    /* Page statistiques */
+    .stats-period { display: flex; background: white; border-radius: 1rem; padding: 0.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 0.75rem; overflow-x: auto; gap: 0.2rem; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .stats-period::-webkit-scrollbar { display: none; }
+    .period-btn { flex-shrink: 0; padding: 0.5rem 0.75rem; border: none; background: transparent; border-radius: 0.75rem; font-family: inherit; font-size: 0.75rem; font-weight: 500; cursor: pointer; color: #78716c; transition: all 0.15s; white-space: nowrap; }
+    .period-btn.active { background: #2D2A24; color: white; }
+    .month-nav { display: flex; align-items: center; justify-content: space-between; background: white; border-radius: 1rem; padding: 0.625rem 0.875rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 1.5rem; animation: fadeIn 0.2s ease-out; }
+    .month-nav-label { font-family: 'Fraunces', Georgia, serif; font-size: 1rem; font-weight: 500; color: #1c1917; }
+    .month-nav-btn { background: none; border: none; padding: 0.375rem 0.625rem; cursor: pointer; color: #57534e; border-radius: 0.5rem; font-size: 1rem; transition: background 0.1s; line-height: 1; }
+    .month-nav-btn:active { background: #f0ece4; }
+    .month-nav-btn:disabled { color: #d6d3d1; cursor: not-allowed; }
+    .stats-summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .stats-summary-card { background: white; border-radius: 1rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .stats-sum-label { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: #a8a29e; margin-bottom: 0.3rem; }
+    .stats-sum-amount { font-family: 'Fraunces', Georgia, serif; font-size: 1.125rem; font-variant-numeric: tabular-nums; font-weight: 500; }
+    .stats-card { background: white; border-radius: 1.25rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 1.5rem; }
+    .stats-card-title { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: #78716c; margin-bottom: 1.25rem; }
+    .stats-chart-wrap { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.25rem; }
+    .donut-wrap { position: relative; flex-shrink: 0; }
+    .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+    .donut-total { font-family: 'Fraunces', Georgia, serif; font-size: 1rem; font-weight: 500; font-variant-numeric: tabular-nums; color: #1c1917; line-height: 1; }
+    .donut-sub { font-size: 0.6rem; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.15rem; }
+    .stats-legend { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+    .legend-item { display: flex; align-items: center; gap: 0.5rem; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .legend-label { font-size: 0.75rem; color: #44403c; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .legend-val { font-family: 'Fraunces', Georgia, serif; font-size: 0.75rem; color: #1c1917; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .stats-bars { display: flex; flex-direction: column; gap: 0.75rem; }
+    .stat-bar-row { display: flex; flex-direction: column; gap: 0.25rem; }
+    .stat-bar-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+    .stat-bar-name { font-size: 0.8rem; color: #292524; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat-bar-info { font-size: 0.7rem; color: #a8a29e; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .stat-bar-track { height: 5px; border-radius: 999px; background: #f5f5f4; overflow: hidden; }
+    .stat-bar-fill { height: 100%; border-radius: 999px; }
+    .stats-empty { text-align: center; padding: 2rem 0; color: #a8a29e; font-size: 0.875rem; }
+
+    /* Page comparaison */
+    .compare-months { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .compare-month-card { background: white; border-radius: 1rem; padding: 0.875rem 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+    .compare-month-label { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+    .compare-month-name { font-family: 'Fraunces', Georgia, serif; font-size: 0.875rem; font-weight: 500; color: #1c1917; text-align: center; line-height: 1.2; }
+    .compare-month-nav { display: flex; align-items: center; gap: 0.25rem; }
+    .compare-nav-btn { background: none; border: none; cursor: pointer; color: #57534e; padding: 0.2rem 0.5rem; border-radius: 0.375rem; font-size: 1rem; line-height: 1; transition: background 0.1s; }
+    .compare-nav-btn:active { background: #f0ece4; }
+    .compare-nav-btn:disabled { color: #d6d3d1; cursor: not-allowed; }
+    .compare-section { background: white; border-radius: 1.25rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 1.5rem; }
+    .compare-section-title { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: #78716c; margin-bottom: 1.25rem; }
+    .compare-row { margin-bottom: 1.1rem; }
+    .compare-row:last-child { margin-bottom: 0; }
+    .compare-row-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+    .compare-row-label { font-size: 0.8rem; color: #292524; font-weight: 500; flex: 1; }
+    .compare-diff { font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 999px; flex-shrink: 0; }
+    .compare-diff.up   { background: rgba(91,130,102,0.12); color: #5B8266; }
+    .compare-diff.down { background: rgba(184,84,80,0.12);  color: #B85450; }
+    .compare-diff.eq   { background: rgba(168,162,158,0.12); color: #78716c; }
+    .compare-bar-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+    .compare-bar-tag { font-size: 0.6rem; font-weight: 700; width: 1.6rem; flex-shrink: 0; text-align: center; padding: 0.1rem 0; border-radius: 3px; }
+    .compare-bar-track { flex: 1; height: 7px; background: #f5f5f4; border-radius: 999px; overflow: hidden; }
+    .compare-bar-fill { height: 100%; border-radius: 999px; transition: width 0.45s ease; }
+    .compare-bar-amount { font-family: 'Fraunces', Georgia, serif; font-size: 0.75rem; font-variant-numeric: tabular-nums; color: #1c1917; flex-shrink: 0; min-width: 4.5rem; text-align: right; }
+
+    /* Prêts reçus */
+    .action-loan { background: #5C5A8E; box-shadow: 0 4px 12px -4px rgba(92,90,142,0.4); grid-column: span 2; }
+    .loan-summary { background: linear-gradient(135deg, #3D3A5C 0%, #5C5A8E 100%); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+    .loan-summary-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #C5C3E8; margin-bottom: 0.2rem; }
+    .loan-summary-amount { font-family: 'Fraunces', Georgia, serif; font-size: 1.375rem; color: white; font-variant-numeric: tabular-nums; }
+    .loan-item { background: white; border-radius: 1rem; padding: 0.875rem; display: flex; align-items: flex-start; gap: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); animation: fadeIn 0.3s ease-out; }
+    .loan-item.loan-paid { opacity: 0.55; }
+    .loan-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.25rem; }
+    .loan-icon.marche { background: rgba(196,155,91,0.15); }
+    .loan-icon.famille { background: rgba(91,130,102,0.15); }
+    .loan-content { flex: 1; min-width: 0; }
+    .loan-lender { font-size: 0.875rem; font-weight: 500; color: #1c1917; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .loan-meta { font-size: 0.75rem; color: #78716c; }
+    .loan-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; flex-shrink: 0; }
+    .loan-amount { font-family: 'Fraunces', Georgia, serif; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.95rem; color: #5C5A8E; }
+    .loan-amount.rembourse { color: #5B8266; text-decoration: line-through; }
+    .loan-status-badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 999px; font-weight: 600; }
+    .loan-status-badge.actif { background: rgba(92,90,142,0.12); color: #5C5A8E; }
+    .loan-status-badge.rembourse { background: rgba(91,130,102,0.12); color: #5B8266; }
+    .loan-actions-row { display: flex; gap: 0.4rem; margin-top: 0.15rem; }
+    .loan-btn { background: none; border: 1px solid #e7e5e4; border-radius: 0.5rem; padding: 0.25rem 0.5rem; font-family: inherit; font-size: 0.68rem; font-weight: 500; cursor: pointer; color: #57534e; display: flex; align-items: center; gap: 0.2rem; }
+    .loan-btn.pay { border-color: #86EFAC; color: #5B8266; background: rgba(91,130,102,0.06); }
+    .loan-btn.del { border-color: #e7e5e4; color: #d6d3d1; padding: 0.25rem; }
+    .loan-btn:active { opacity: 0.7; }
+    .loan-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+    .loan-type-btn { border: 2px solid #e7e5e4; background: white; border-radius: 1rem; padding: 1rem 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; cursor: pointer; transition: all 0.15s; font-family: inherit; width: 100%; }
+    .loan-type-btn .type-icon { font-size: 1.75rem; line-height: 1; }
+    .loan-type-btn .type-label { font-size: 0.75rem; font-weight: 600; color: #57534e; }
+    .loan-type-btn.selected { border-color: #5C5A8E; background: rgba(92,90,142,0.08); }
+    .loan-type-btn.selected .type-label { color: #5C5A8E; }
   </style>
 </head>
 <body>
@@ -222,8 +320,9 @@
        Cache local + fonctionnement hors-ligne
        ========================================================== */
     const DB_NAME = 'budgetDB';
-    const DB_VERSION = 2;
+    const DB_VERSION = 3;
     const STORE = 'transactions';
+    const LOANS_STORE = 'loans';
 
     function openDB() {
       return new Promise((resolve, reject) => {
@@ -240,6 +339,9 @@
           if (!store.indexNames.contains('date')) store.createIndex('date', 'date');
           if (!store.indexNames.contains('synced')) store.createIndex('synced', 'synced');
           if (!store.indexNames.contains('updated_at')) store.createIndex('updated_at', 'updated_at');
+          if (!db.objectStoreNames.contains(LOANS_STORE)) {
+            db.createObjectStore(LOANS_STORE, { keyPath: 'id' });
+          }
         };
         req.onsuccess = (e) => resolve(e.target.result);
         req.onerror = (e) => reject(e.target.error);
@@ -290,6 +392,41 @@
     async function dbGetUnsynced() {
       const all = await dbGetAll();
       return all.filter(t => t.synced === false);
+    }
+
+    async function loanGetAll() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(LOANS_STORE, 'readonly');
+        const req = tx.objectStore(LOANS_STORE).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function loanPut(item) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(LOANS_STORE, 'readwrite');
+        const req = tx.objectStore(LOANS_STORE).put(item);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function loanHardDelete(id) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(LOANS_STORE, 'readwrite');
+        tx.objectStore(LOANS_STORE).delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function loanGetUnsynced() {
+      const all = await loanGetAll();
+      return all.filter(l => l.synced === false);
     }
 
     /* ==========================================================
@@ -442,6 +579,9 @@
           await dbBulkPut(cloudItems);
           await reloadFromLocal();
 
+          // Sync des prêts en parallèle
+          await syncEngine.loanFullSync();
+
           state.syncStatus = 'synced';
           state.lastSyncAt = new Date();
           render();
@@ -477,7 +617,49 @@
           state.syncError = e.message;
           render();
         }
-      }
+      },
+
+      async loanFullSync() {
+        if (!supabase || !state.user || !navigator.onLine) return;
+        try {
+          const pending = await loanGetUnsynced();
+          if (pending.length > 0) {
+            const rows = pending.map(l => ({
+              id: l.id, amount: l.amount, lender: l.lender,
+              lender_type: l.lenderType, description: l.description || '',
+              date: l.date, status: l.status, deleted_at: l.deleted_at || null,
+            }));
+            const { error } = await supabase.from('loans').upsert(rows);
+            if (error) throw error;
+            for (const l of pending) await loanPut({ ...l, synced: true });
+          }
+          const { data, error: pullErr } = await supabase.from('loans').select('*');
+          if (pullErr) throw pullErr;
+          for (const r of (data || [])) {
+            await loanPut({
+              id: r.id, amount: parseFloat(r.amount), lender: r.lender,
+              lenderType: r.lender_type, description: r.description || '',
+              date: r.date, status: r.status, deleted_at: r.deleted_at, synced: true,
+            });
+          }
+          const allLoans = await loanGetAll();
+          state.loans = allLoans.filter(l => !l.deleted_at);
+          render();
+        } catch (e) { console.error('Loan sync error', e); }
+      },
+
+      async loanPushChange(loan) {
+        if (!supabase || !state.user || !navigator.onLine) return;
+        try {
+          const { error } = await supabase.from('loans').upsert({
+            id: loan.id, amount: loan.amount, lender: loan.lender,
+            lender_type: loan.lenderType, description: loan.description || '',
+            date: loan.date, status: loan.status, deleted_at: loan.deleted_at || null,
+          });
+          if (error) throw error;
+          await loanPut({ ...loan, synced: true });
+        } catch (e) { console.error('Loan push failed', e); }
+      },
     };
 
     /* ==========================================================
@@ -509,6 +691,11 @@
       refresh: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>',
       download: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>',
       upload: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>',
+      loan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
+      navBudget: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v0"/><circle cx="18" cy="14" r="2"/></svg>',
+      navStats: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 16V10M12 16V7M17 16v-4"/></svg>',
+      navCompare: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><line x1="12" y1="8" x2="12" y2="16"/><polyline points="9 11 12 8 15 11"/><polyline points="9 16 12 19 15 16"/></svg>',
+      loanBig: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
     };
 
     /* ==========================================================
@@ -524,10 +711,12 @@
         { id: 'vetements', label: 'Vêtements', icon: 'shirt', color: '#8B6F8E' },
         { id: 'factures', label: 'Factures', icon: 'receipt', color: '#6B7B8C' },
         { id: 'epargne', label: 'Épargne', icon: 'piggy', color: '#5B8266' },
+        { id: 'remboursement', label: 'Remboursement', icon: 'loan', color: '#5C5A8E' },
         { id: 'autres', label: 'Autres', icon: 'more', color: '#7A6A5A' },
       ],
       income: [
         { id: 'salaire', label: 'Salaire', icon: 'briefcase', color: '#5B8266' },
+        { id: 'pret-recu', label: 'Prêt reçu', icon: 'loan', color: '#5C5A8E' },
         { id: 'autres-revenus', label: 'Autres', icon: 'more', color: '#7A6A5A' },
       ],
     };
@@ -540,8 +729,9 @@
        ========================================================== */
     const state = {
       transactions: [],
+      loans: [],
       loading: true,
-      modal: null,         // 'income' | 'expense' | 'menu' | 'cloud-setup' | 'auth'
+      modal: null,         // 'income' | 'expense' | 'menu' | 'cloud-setup' | 'auth' | 'add-loan'
       authMode: 'signin',  // 'signin' | 'signup'
       authForm: { email: '', password: '' },
       authError: null,
@@ -551,7 +741,15 @@
       confirmDelete: null,
       confirmClear: false,
       confirmSignOut: false,
+      confirmRepay: null,
+      confirmDeleteLoan: null,
       form: { amount: '', category: '', description: '' },
+      loanForm: { amount: '', lender: '', lenderType: 'famille', description: '' },
+      currentPage: 'budget',     // 'budget' | 'stats' | 'compare'
+      statsPeriod: 'month',      // 'month' | 'pick' | '3months' | '6months' | 'year'
+      statsPickedMonth: new Date().toISOString().slice(0, 7), // 'YYYY-MM'
+      compareMonth1: (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 7); })(),
+      compareMonth2: new Date().toISOString().slice(0, 7),
       user: null,
       syncStatus: 'local',  // 'local' | 'syncing' | 'synced' | 'offline' | 'error'
       syncError: null,
@@ -563,8 +761,9 @@
 
     async function reloadFromLocal() {
       const all = await dbGetAll();
-      // Filtre les éléments soft-deleted
       state.transactions = all.filter(t => !t.deleted_at);
+      const allLoans = await loanGetAll();
+      state.loans = allLoans.filter(l => !l.deleted_at);
     }
 
     /* ==========================================================
@@ -581,6 +780,301 @@
       div.textContent = str || '';
       return div.innerHTML;
     }
+    function makeDonut(items, size) {
+      const r = size * 0.33, cx = size / 2, cy = size / 2;
+      const circ = 2 * Math.PI * r;
+      const total = items.reduce((s, i) => s + i.amount, 0);
+      if (!total) return '';
+      let paths = '', cumDeg = -90;
+      items.forEach(item => {
+        const pct = item.amount / total;
+        const dash = pct * circ;
+        paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${item.color}"
+          stroke-width="${size * 0.155}" stroke-dasharray="${dash} ${circ - dash}"
+          transform="rotate(${cumDeg} ${cx} ${cy})" />`;
+        cumDeg += pct * 360;
+      });
+      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block">
+        ${paths}
+        <circle cx="${cx}" cy="${cy}" r="${r * 0.59}" fill="#F5F1E8" />
+      </svg>`;
+    }
+
+    function renderStatsPage() {
+      const now = new Date();
+      const currentMonthStr = now.toISOString().slice(0, 7);
+      const p = state.statsPeriod;
+
+      // Calculs pour le mode "pick"
+      const [pickedY, pickedM] = state.statsPickedMonth.split('-').map(Number);
+      const pickedLabel = new Date(pickedY, pickedM - 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      const prevDate = new Date(pickedY, pickedM - 2, 1);
+      const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+      const nextDate = new Date(pickedY, pickedM, 1);
+      const nextMonthStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`;
+      const canGoNext = nextMonthStr <= currentMonthStr;
+
+      const filtered = state.transactions.filter(tx => {
+        const d = new Date(tx.date);
+        if (p === 'month') {
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        } else if (p === 'pick') {
+          return d.getFullYear() === pickedY && d.getMonth() === pickedM - 1;
+        } else if (p === '3months') {
+          const cut = new Date(now); cut.setMonth(cut.getMonth() - 3); return d >= cut;
+        } else if (p === '6months') {
+          const cut = new Date(now); cut.setMonth(cut.getMonth() - 6); return d >= cut;
+        } else {
+          return d.getFullYear() === now.getFullYear();
+        }
+      });
+
+      const periodLabel =
+        p === 'month'   ? now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+        : p === 'pick'    ? pickedLabel
+        : p === '3months' ? '3 derniers mois'
+        : p === '6months' ? '6 derniers mois'
+        : String(now.getFullYear());
+
+      const expByCat = {}, incByCat = {};
+      filtered.filter(t => t.type === 'expense').forEach(t => { expByCat[t.category] = (expByCat[t.category] || 0) + t.amount; });
+      filtered.filter(t => t.type === 'income').forEach(t => { incByCat[t.category] = (incByCat[t.category] || 0) + t.amount; });
+
+      const totalExp = Object.values(expByCat).reduce((s, v) => s + v, 0);
+      const totalInc = Object.values(incByCat).reduce((s, v) => s + v, 0);
+
+      const expItems = Object.entries(expByCat).sort((a, b) => b[1] - a[1]).map(([id, amt]) => {
+        const cat = findCat('expense', id);
+        return { label: cat.label, amount: amt, color: cat.color, pct: totalExp > 0 ? (amt / totalExp) * 100 : 0 };
+      });
+      const incItems = Object.entries(incByCat).sort((a, b) => b[1] - a[1]).map(([id, amt]) => {
+        const cat = findCat('income', id);
+        return { label: cat.label, amount: amt, color: cat.color, pct: totalInc > 0 ? (amt / totalInc) * 100 : 0 };
+      });
+
+      function sectionHtml(title, items, total) {
+        if (!items.length) return `
+          <div class="stats-card">
+            <p class="stats-card-title">${title}</p>
+            <div class="stats-empty">Aucune donnée sur cette période</div>
+          </div>`;
+        const donut = makeDonut(items, 112);
+        const legend = items.slice(0, 5).map(it => `
+          <div class="legend-item">
+            <div class="legend-dot" style="background:${it.color}"></div>
+            <span class="legend-label">${it.label}</span>
+            <span class="legend-val">${formatMoney(it.amount)}</span>
+          </div>`).join('');
+        const bars = items.map(it => `
+          <div class="stat-bar-row">
+            <div class="stat-bar-top">
+              <span class="stat-bar-name">${it.label}</span>
+              <span class="stat-bar-info">${it.pct.toFixed(1)}% · ${formatMoney(it.amount)} DH</span>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill" style="width:${it.pct}%;background:${it.color}"></div>
+            </div>
+          </div>`).join('');
+        return `
+          <div class="stats-card">
+            <p class="stats-card-title">${title}</p>
+            <div class="stats-chart-wrap">
+              <div class="donut-wrap">
+                ${donut}
+                <div class="donut-center">
+                  <span class="donut-total">${formatMoney(total)}</span>
+                  <span class="donut-sub">DH</span>
+                </div>
+              </div>
+              <div class="stats-legend">${legend}</div>
+            </div>
+            <div class="stats-bars">${bars}</div>
+          </div>`;
+      }
+
+      return `
+        <p class="header-month" style="font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;color:#78716c;margin-bottom:0.75rem">${periodLabel}</p>
+        <div class="stats-period">
+          <button class="period-btn ${p === 'month'   ? 'active' : ''}" data-action="stats-period" data-period="month">Ce mois</button>
+          <button class="period-btn ${p === 'pick'    ? 'active' : ''}" data-action="stats-period" data-period="pick">Choisir</button>
+          <button class="period-btn ${p === '3months' ? 'active' : ''}" data-action="stats-period" data-period="3months">3 mois</button>
+          <button class="period-btn ${p === '6months' ? 'active' : ''}" data-action="stats-period" data-period="6months">6 mois</button>
+          <button class="period-btn ${p === 'year'    ? 'active' : ''}" data-action="stats-period" data-period="year">Cette année</button>
+        </div>
+        ${p === 'pick' ? `
+        <div class="month-nav">
+          <button class="month-nav-btn" data-action="stats-prev-month">&#8592;</button>
+          <span class="month-nav-label">${pickedLabel}</span>
+          <button class="month-nav-btn" data-action="stats-next-month" ${canGoNext ? '' : 'disabled'}>&#8594;</button>
+        </div>` : '<div style="margin-bottom:1.5rem"></div>'}
+        <div class="stats-summary-row">
+          <div class="stats-summary-card">
+            <p class="stats-sum-label">${ICONS.arrowDown} Revenus</p>
+            <p class="stats-sum-amount income-color">${formatMoney(totalInc)}<span style="font-size:0.75rem;color:#a8a29e"> DH</span></p>
+          </div>
+          <div class="stats-summary-card">
+            <p class="stats-sum-label">${ICONS.arrowUp} Dépenses</p>
+            <p class="stats-sum-amount expense-color">${formatMoney(totalExp)}<span style="font-size:0.75rem;color:#a8a29e"> DH</span></p>
+          </div>
+        </div>
+        ${sectionHtml('Dépenses par catégorie', expItems, totalExp)}
+        ${sectionHtml('Revenus par catégorie', incItems, totalInc)}
+        </div>`; // ferme .container
+    }
+
+    function renderComparePage() {
+      const currentMonthStr = new Date().toISOString().slice(0, 7);
+
+      function monthLabel(ym) {
+        const [y, m] = ym.split('-').map(Number);
+        return new Date(y, m - 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      }
+
+      function prevMonth(ym) {
+        const [y, m] = ym.split('-').map(Number);
+        const d = new Date(y, m - 2, 1);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      function nextMonth(ym) {
+        const [y, m] = ym.split('-').map(Number);
+        const d = new Date(y, m, 1);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      function txForMonth(ym) {
+        const [y, m] = ym.split('-').map(Number);
+        return state.transactions.filter(t => {
+          const d = new Date(t.date);
+          return d.getFullYear() === y && d.getMonth() === m - 1;
+        });
+      }
+
+      function totals(txs) {
+        const inc = txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+        const exp = txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        return { inc, exp, bal: inc - exp };
+      }
+
+      function byCat(txs, type) {
+        const map = {};
+        txs.filter(t => t.type === type).forEach(t => { map[t.category] = (map[t.category] || 0) + t.amount; });
+        return map;
+      }
+
+      const m1 = state.compareMonth1, m2 = state.compareMonth2;
+      const tx1 = txForMonth(m1), tx2 = txForMonth(m2);
+      const t1 = totals(tx1), t2 = totals(tx2);
+
+      function monthPicker(which, ym) {
+        const nm = nextMonth(ym);
+        const canNext = nm <= currentMonthStr;
+        return `
+          <div class="compare-month-card">
+            <div class="compare-month-label">Mois ${which}</div>
+            <div class="compare-month-nav">
+              <button class="compare-nav-btn" data-action="compare-prev" data-which="${which}">&#8592;</button>
+              <span class="compare-month-name">${monthLabel(ym)}</span>
+              <button class="compare-nav-btn" data-action="compare-next" data-which="${which}" ${canNext ? '' : 'disabled'}>&#8594;</button>
+            </div>
+          </div>`;
+      }
+
+      function diffTag(a, b, invert) {
+        if (a === 0 && b === 0) return '<span class="compare-diff eq">—</span>';
+        const diff = b - a;
+        if (diff === 0) return '<span class="compare-diff eq">0</span>';
+        const sign = diff > 0 ? '+' : '';
+        const cls = invert ? (diff > 0 ? 'down' : 'up') : (diff > 0 ? 'up' : 'down');
+        return `<span class="compare-diff ${cls}">${sign}${formatMoney(Math.abs(diff))}</span>`;
+      }
+
+      function summaryRow(label, v1, v2, invert) {
+        const max = Math.max(v1, v2, 1);
+        return `
+          <div class="compare-row">
+            <div class="compare-row-header">
+              <span class="compare-row-label">${label}</span>
+              ${diffTag(v1, v2, invert)}
+            </div>
+            <div class="compare-bar-row">
+              <div class="compare-bar-tag">${formatMoney(v1)}</div>
+              <div class="compare-bar-track">
+                <div class="compare-bar-fill" style="width:${(v1/max*100).toFixed(1)}%;background:#5B8266;opacity:0.85"></div>
+              </div>
+              <div class="compare-bar-amount">${formatMoney(v2)}</div>
+            </div>
+            <div class="compare-bar-row" style="margin-top:0.25rem">
+              <div class="compare-bar-tag" style="opacity:0"></div>
+              <div class="compare-bar-track">
+                <div class="compare-bar-fill" style="width:${(v2/max*100).toFixed(1)}%;background:#9A6240;opacity:0.85"></div>
+              </div>
+              <div class="compare-bar-amount" style="opacity:0"></div>
+            </div>
+          </div>`;
+      }
+
+      function catSection(title, type) {
+        const c1 = byCat(tx1, type), c2 = byCat(tx2, type);
+        const allCats = [...new Set([...Object.keys(c1), ...Object.keys(c2)])];
+        if (!allCats.length) return `
+          <div class="compare-section">
+            <div class="compare-section-title">${title}</div>
+            <p style="font-size:0.8rem;color:#a8a29e;text-align:center;padding:0.5rem 0">Aucune donnée</p>
+          </div>`;
+        const max = Math.max(...allCats.map(id => Math.max(c1[id] || 0, c2[id] || 0)), 1);
+        const rows = allCats.sort((a, b) => Math.max(c2[b]||0, c1[b]||0) - Math.max(c2[a]||0, c1[a]||0)).map(id => {
+          const cat = findCat(type, id);
+          const v1 = c1[id] || 0, v2 = c2[id] || 0;
+          return `
+            <div class="compare-row">
+              <div class="compare-row-header">
+                <span class="compare-row-label">${cat.label}</span>
+                ${diffTag(v1, v2, type === 'expense')}
+              </div>
+              <div class="compare-bar-row">
+                <div class="compare-bar-tag">${formatMoney(v1)}</div>
+                <div class="compare-bar-track">
+                  <div class="compare-bar-fill" style="width:${(v1/max*100).toFixed(1)}%;background:${cat.color};opacity:0.7"></div>
+                </div>
+                <div class="compare-bar-amount">${formatMoney(v2)}</div>
+              </div>
+              <div class="compare-bar-row" style="margin-top:0.2rem">
+                <div class="compare-bar-tag" style="opacity:0"></div>
+                <div class="compare-bar-track">
+                  <div class="compare-bar-fill" style="width:${(v2/max*100).toFixed(1)}%;background:${cat.color}"></div>
+                </div>
+                <div class="compare-bar-amount" style="opacity:0"></div>
+              </div>
+            </div>`;
+        }).join('');
+        return `
+          <div class="compare-section">
+            <div class="compare-section-title">${title}</div>
+            ${rows}
+          </div>`;
+      }
+
+      return `
+        <div class="compare-legend-row" style="display:flex;gap:1rem;margin-bottom:1.25rem;font-size:0.75rem;color:#57534e">
+          <span style="display:flex;align-items:center;gap:0.35rem"><span style="width:10px;height:10px;border-radius:2px;background:#5B8266;opacity:0.85;display:inline-block"></span>${monthLabel(m1)}</span>
+          <span style="display:flex;align-items:center;gap:0.35rem"><span style="width:10px;height:10px;border-radius:2px;background:#9A6240;opacity:0.85;display:inline-block"></span>${monthLabel(m2)}</span>
+        </div>
+        <div class="compare-months">
+          ${monthPicker(1, m1)}
+          ${monthPicker(2, m2)}
+        </div>
+        <div class="compare-section">
+          <div class="compare-section-title">Résumé</div>
+          ${summaryRow('Revenus', t1.inc, t2.inc, false)}
+          ${summaryRow('Dépenses', t1.exp, t2.exp, true)}
+          ${summaryRow('Solde', t1.bal, t2.bal, false)}
+        </div>
+        ${catSection('Dépenses par catégorie', 'expense')}
+        ${catSection('Revenus par catégorie', 'income')}
+        </div>`; // ferme .container
+    }
+
     function showToast(msg, ms = 2500) {
       const c = document.getElementById('toast-container');
       const t = document.createElement('div');
@@ -628,12 +1122,15 @@
         else { pillClass = 'synced'; pillLabel = 'Cloud activé'; }
       }
 
+      const isStats   = state.currentPage === 'stats';
+      const isCompare = state.currentPage === 'compare';
+
       let html = `
         <div class="container">
           <header class="header">
             <div>
-              <p class="header-month">${monthName}</p>
-              <h1 class="header-title">Mon Budget</h1>
+              <p class="header-month">${isStats ? 'Analyse' : isCompare ? 'Comparaison' : monthName}</p>
+              <h1 class="header-title">${isStats ? 'Statistiques' : isCompare ? 'Comparer' : 'Mon Budget'}</h1>
             </div>
             <button class="menu-btn" data-action="open-menu" aria-label="Menu">${ICONS.menu}</button>
           </header>
@@ -645,7 +1142,7 @@
       `;
 
       // Bannière de bienvenue (si pas connecté et pas dismissé)
-      if (!state.user && localStorage.getItem(SYNC_DISABLED_KEY) !== '1' && !state.welcomeBannerDismissed) {
+      if (!isStats && !isCompare && !state.user && localStorage.getItem(SYNC_DISABLED_KEY) !== '1' && !state.welcomeBannerDismissed) {
         html += `
           <div class="welcome-banner">
             <div class="welcome-banner-text">
@@ -657,6 +1154,12 @@
           </div>
         `;
       }
+
+      if (isStats) {
+        html += renderStatsPage();
+      } else if (isCompare) {
+        html += renderComparePage();
+      } else {
 
       html += `
           <div class="balance-card">
@@ -677,8 +1180,58 @@
           <div class="actions">
             <button class="action-btn action-income" data-action="open-modal" data-type="income">${ICONS.plus}<span>Revenu</span></button>
             <button class="action-btn action-expense" data-action="open-modal" data-type="expense">${ICONS.plus}<span>Dépense</span></button>
+            <button class="action-btn action-loan" data-action="open-loan-modal">${ICONS.loan}<span>Prêt reçu</span></button>
           </div>
       `;
+
+      // Section prêts
+      if (state.loans.length > 0) {
+        const activeLoans = state.loans.filter(l => l.status === 'actif');
+        const totalDue = activeLoans.reduce((s, l) => s + l.amount, 0);
+        html += `<section class="section">
+          <div class="section-header">
+            <h2 class="section-title" style="margin-bottom:0">Mes prêts</h2>
+            <span class="section-count">${activeLoans.length} actif${activeLoans.length > 1 ? 's' : ''}</span>
+          </div>`;
+        if (activeLoans.length > 0) {
+          html += `<div class="loan-summary">
+            <div>
+              <p class="loan-summary-label">Total à rembourser</p>
+              <p class="loan-summary-amount num">${formatMoney(totalDue)} <span style="font-size:0.85rem;color:#C5C3E8">DH</span></p>
+            </div>
+            ${ICONS.loanBig}
+          </div>`;
+        }
+        const sortedLoans = [...state.loans].sort((a, b) => {
+          if (a.status === 'actif' && b.status !== 'actif') return -1;
+          if (b.status === 'actif' && a.status !== 'actif') return 1;
+          return new Date(b.date) - new Date(a.date);
+        });
+        html += '<div class="tx-list">';
+        sortedLoans.forEach(loan => {
+          const isActif = loan.status === 'actif';
+          const emoji = loan.lenderType === 'marche' ? '🏪' : '🤝';
+          const typeLabel = loan.lenderType === 'marche' ? 'Marché / Boutique' : 'Famille / Proche';
+          const desc = loan.description ? ` · ${escapeHtml(loan.description)}` : '';
+          html += `
+            <div class="loan-item${isActif ? '' : ' loan-paid'}">
+              <div class="loan-icon ${loan.lenderType}">${emoji}</div>
+              <div class="loan-content">
+                <p class="loan-lender">${escapeHtml(loan.lender)}</p>
+                <p class="loan-meta">${typeLabel} · ${formatDate(loan.date)}${desc}</p>
+              </div>
+              <div class="loan-right">
+                <span class="loan-amount ${loan.status}">${formatMoney(loan.amount)}</span>
+                <span class="loan-status-badge ${loan.status}">${isActif ? 'À rembourser' : 'Remboursé'}</span>
+                <div class="loan-actions-row">
+                  ${isActif ? '<button class="loan-btn pay" data-action="ask-repay" data-id="' + loan.id + '">✓ Remboursé</button>' : ''}
+                  <button class="loan-btn del" data-action="ask-delete-loan" data-id="${loan.id}">${ICONS.trash}</button>
+                </div>
+              </div>
+            </div>`;
+        });
+        html += '</div></section>';
+      }
 
       if (sortedCats.length > 0) {
         html += `<section class="section"><h2 class="section-title">Par catégorie</h2><div class="category-card">`;
@@ -736,6 +1289,24 @@
       }
 
       html += `</section></div>`;
+      } // fin else budget
+
+      // Barre de navigation (fixe, toujours visible)
+      html += `
+        <nav class="bottom-nav">
+          <button class="nav-btn ${state.currentPage === 'budget' ? 'active' : ''}" data-action="nav-budget">
+            ${ICONS.navBudget}
+            <span>Budget</span>
+          </button>
+          <button class="nav-btn ${isStats ? 'active' : ''}" data-action="nav-stats">
+            ${ICONS.navStats}
+            <span>Statistiques</span>
+          </button>
+          <button class="nav-btn ${isCompare ? 'active' : ''}" data-action="nav-compare">
+            ${ICONS.navCompare}
+            <span>Comparer</span>
+          </button>
+        </nav>`;
 
       // ===== Modal: Add transaction =====
       if (state.modal === 'income' || state.modal === 'expense') {
@@ -910,6 +1481,56 @@
           </div>`;
       }
 
+      // ===== Modal: Ajouter un prêt =====
+      if (state.modal === 'add-loan') {
+        const f = state.loanForm;
+        const validLoan = parseFloat((f.amount || '').replace(',', '.')) > 0 && f.lender.trim().length > 0;
+        html += `
+          <div class="modal-backdrop" data-action="close-modal">
+            <div class="modal-sheet" data-stop>
+              <div class="modal-header">
+                <div>
+                  <p class="header-month">Nouveau</p>
+                  <h3 class="modal-title">Prêt reçu</h3>
+                </div>
+                <button class="modal-close" data-action="close-modal">${ICONS.x}</button>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Montant</label>
+                <div class="amount-input">
+                  <input type="text" inputmode="decimal" id="loan-amount-input" value="${f.amount}" placeholder="0,00" autofocus />
+                  <span class="amount-currency">DH</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Source du prêt</label>
+                <div class="loan-type-grid">
+                  <button class="loan-type-btn ${f.lenderType === 'marche' ? 'selected' : ''}" data-action="select-loan-type" data-type="marche">
+                    <span class="type-icon">🏪</span>
+                    <span class="type-label">Marché / Boutique</span>
+                  </button>
+                  <button class="loan-type-btn ${f.lenderType === 'famille' ? 'selected' : ''}" data-action="select-loan-type" data-type="famille">
+                    <span class="type-icon">🤝</span>
+                    <span class="type-label">Famille / Proche</span>
+                  </button>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Nom du prêteur</label>
+                <input type="text" class="text-input" id="loan-lender-input" value="${escapeHtml(f.lender)}"
+                       placeholder="${f.lenderType === 'marche' ? 'Épicerie du coin' : 'Mohammed (frère)'}" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Description (optionnel)</label>
+                <input type="text" class="text-input" id="loan-desc-input" value="${escapeHtml(f.description)}"
+                       placeholder="Motif du prêt…" />
+              </div>
+              <button class="confirm-btn" data-action="confirm-add-loan" ${!validLoan ? 'disabled' : ''}
+                      style="background:#5C5A8E">Enregistrer le prêt</button>
+            </div>
+          </div>`;
+      }
+
       // ===== Confirm dialogs =====
       if (state.confirmDelete) {
         html += `
@@ -950,6 +1571,33 @@
             </div>
           </div>`;
       }
+      if (state.confirmRepay) {
+        const repayLoan = state.loans.find(l => l.id === state.confirmRepay);
+        html += `
+          <div class="confirm-backdrop" data-action="close-repay">
+            <div class="confirm-dialog" data-stop>
+              <h3 class="confirm-title">Marquer comme remboursé ?</h3>
+              <p class="confirm-msg">Une dépense de <strong>${repayLoan ? formatMoney(repayLoan.amount) + ' DH' : ''}</strong> sera automatiquement ajoutée à ton historique${state.user ? ' et synchronisée' : ''}.</p>
+              <div class="confirm-actions">
+                <button class="btn-cancel" data-action="close-repay">Annuler</button>
+                <button class="confirm-btn" data-action="confirm-repay" style="background:#5B8266;flex:1">Confirmer</button>
+              </div>
+            </div>
+          </div>`;
+      }
+      if (state.confirmDeleteLoan) {
+        html += `
+          <div class="confirm-backdrop" data-action="close-delete-loan">
+            <div class="confirm-dialog" data-stop>
+              <h3 class="confirm-title">Supprimer ce prêt ?</h3>
+              <p class="confirm-msg">Ce prêt sera supprimé${state.user ? ' de tous tes appareils' : ''}.</p>
+              <div class="confirm-actions">
+                <button class="btn-cancel" data-action="close-delete-loan">Annuler</button>
+                <button class="btn-danger" data-action="confirm-delete-loan">Supprimer</button>
+              </div>
+            </div>
+          </div>`;
+      }
 
       app.innerHTML = html;
 
@@ -975,6 +1623,24 @@
       if (authEmailEl) authEmailEl.addEventListener('input', (e) => { state.authForm.email = e.target.value; });
       const authPwdEl = document.getElementById('auth-password');
       if (authPwdEl) authPwdEl.addEventListener('input', (e) => { state.authForm.password = e.target.value; });
+
+      const loanAmountEl = document.getElementById('loan-amount-input');
+      if (loanAmountEl) {
+        loanAmountEl.addEventListener('input', (e) => {
+          state.loanForm.amount = e.target.value.replace(/[^0-9.,]/g, '');
+          e.target.value = state.loanForm.amount;
+          const btn = document.querySelector('[data-action="confirm-add-loan"]');
+          if (btn) btn.disabled = !(parseFloat(state.loanForm.amount.replace(',', '.')) > 0) || !state.loanForm.lender.trim();
+        });
+      }
+      const loanLenderEl = document.getElementById('loan-lender-input');
+      if (loanLenderEl) loanLenderEl.addEventListener('input', (e) => {
+        state.loanForm.lender = e.target.value;
+        const btn = document.querySelector('[data-action="confirm-add-loan"]');
+        if (btn) btn.disabled = !(parseFloat(state.loanForm.amount.replace(',', '.')) > 0) || !state.loanForm.lender.trim();
+      });
+      const loanDescEl = document.getElementById('loan-desc-input');
+      if (loanDescEl) loanDescEl.addEventListener('input', (e) => { state.loanForm.description = e.target.value; });
     }
 
     /* ==========================================================
@@ -1173,6 +1839,152 @@
         state.user = null;
         setState({ modal: null, syncStatus: 'local' });
         showToast('Cloud désactivé');
+      }
+
+      // ===== Navigation =====
+      else if (action === 'nav-budget') {
+        setState({ currentPage: 'budget' });
+      }
+      else if (action === 'nav-stats') {
+        setState({ currentPage: 'stats' });
+      }
+      else if (action === 'nav-compare') {
+        setState({ currentPage: 'compare' });
+      }
+      else if (action === 'compare-prev' || action === 'compare-next') {
+        const which = target.dataset.which;
+        const key = which === '1' ? 'compareMonth1' : 'compareMonth2';
+        const cur = which === '1' ? state.compareMonth1 : state.compareMonth2;
+        const [y, m] = cur.split('-').map(Number);
+        let d;
+        if (action === 'compare-prev') {
+          d = new Date(y, m - 2, 1);
+        } else {
+          d = new Date(y, m, 1);
+          const nxt = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          if (nxt > new Date().toISOString().slice(0, 7)) return;
+        }
+        setState({ [key]: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` });
+      }
+      else if (action === 'stats-period') {
+        const period = target.dataset.period;
+        // Si on revient sur "pick", remettre sur le mois courant par défaut
+        const patch = { statsPeriod: period };
+        if (period === 'pick') patch.statsPickedMonth = new Date().toISOString().slice(0, 7);
+        setState(patch);
+      }
+      else if (action === 'stats-prev-month') {
+        const [y, m] = state.statsPickedMonth.split('-').map(Number);
+        const prev = new Date(y, m - 2, 1);
+        setState({ statsPickedMonth: `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}` });
+      }
+      else if (action === 'stats-next-month') {
+        const [y, m] = state.statsPickedMonth.split('-').map(Number);
+        const next = new Date(y, m, 1);
+        const nextStr = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
+        if (nextStr <= new Date().toISOString().slice(0, 7)) setState({ statsPickedMonth: nextStr });
+      }
+
+      // ===== Prêts =====
+      else if (action === 'open-loan-modal') {
+        state.loanForm = { amount: '', lender: '', lenderType: 'famille', description: '' };
+        setState({ modal: 'add-loan' });
+      }
+      else if (action === 'select-loan-type') {
+        state.loanForm.lenderType = target.dataset.type;
+        render();
+      }
+      else if (action === 'confirm-add-loan') {
+        const num = parseFloat(state.loanForm.amount.replace(',', '.'));
+        if (isNaN(num) || num <= 0 || !state.loanForm.lender.trim()) return;
+        const newLoan = {
+          id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
+          amount: num,
+          lender: state.loanForm.lender.trim(),
+          lenderType: state.loanForm.lenderType,
+          description: state.loanForm.description.trim(),
+          date: new Date().toISOString(),
+          status: 'actif',
+          deleted_at: null,
+          synced: false,
+        };
+        await loanPut(newLoan);
+
+        // Ajouter automatiquement un revenu "Prêt reçu" au solde
+        const loanIncomeTx = {
+          id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
+          type: 'income',
+          amount: num,
+          category: 'pret-recu',
+          description: 'Prêt reçu — ' + newLoan.lender,
+          date: newLoan.date,
+          deleted_at: null,
+          synced: false,
+        };
+        await dbPut(loanIncomeTx);
+        if (state.user) syncEngine.pushChange(loanIncomeTx);
+
+        await reloadFromLocal();
+        setState({ modal: null });
+        if (state.user) syncEngine.loanPushChange(newLoan);
+        showToast('Prêt enregistré — solde mis à jour');
+      }
+      else if (action === 'ask-repay') {
+        setState({ confirmRepay: target.dataset.id });
+      }
+      else if (action === 'close-repay') {
+        setState({ confirmRepay: null });
+      }
+      else if (action === 'confirm-repay') {
+        const id = state.confirmRepay;
+        const all = await loanGetAll();
+        const loan = all.find(l => l.id === id);
+        if (loan) {
+          // Marquer le prêt comme remboursé
+          const updated = { ...loan, status: 'rembourse', synced: false };
+          await loanPut(updated);
+          if (state.user) syncEngine.loanPushChange(updated);
+
+          // Créer automatiquement une dépense de remboursement
+          const repayTx = {
+            id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
+            type: 'expense',
+            amount: loan.amount,
+            category: 'remboursement',
+            description: 'Remboursement — ' + loan.lender,
+            date: new Date().toISOString(),
+            deleted_at: null,
+            synced: false,
+          };
+          await dbPut(repayTx);
+          if (state.user) syncEngine.pushChange(repayTx);
+        }
+        await reloadFromLocal();
+        setState({ confirmRepay: null });
+        showToast('Remboursé — dépense débitée ✓');
+      }
+      else if (action === 'ask-delete-loan') {
+        setState({ confirmDeleteLoan: target.dataset.id });
+      }
+      else if (action === 'close-delete-loan') {
+        setState({ confirmDeleteLoan: null });
+      }
+      else if (action === 'confirm-delete-loan') {
+        const id = state.confirmDeleteLoan;
+        if (state.user) {
+          const all = await loanGetAll();
+          const loan = all.find(l => l.id === id);
+          if (loan) {
+            const updated = { ...loan, deleted_at: new Date().toISOString(), synced: false };
+            await loanPut(updated);
+            syncEngine.loanPushChange(updated);
+          }
+        } else {
+          await loanHardDelete(id);
+        }
+        const allLoans = await loanGetAll();
+        state.loans = allLoans.filter(l => !l.deleted_at);
+        setState({ confirmDeleteLoan: null });
       }
 
       // ===== Export / Import / Clear =====
