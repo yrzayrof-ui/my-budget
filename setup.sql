@@ -4,7 +4,7 @@
 -- À copier-coller dans : Supabase Dashboard > SQL Editor > New query
 -- Puis cliquer sur "Run" (Ctrl+Enter)
 -- ============================================================
-
+ 
 -- Table des transactions (revenus + dépenses)
 create table if not exists public.transactions (
   id           text         primary key,
