@@ -297,14 +297,24 @@
        La clé "anon" est faite pour être publique, donc safe ici.
        ========================================================== */
     const CFG_KEY = 'budget-supabase-cfg';
+    const SYNC_DISABLED_KEY = 'budget-sync-disabled';
+    const DEFAULT_SUPABASE_URL = 'https://nfpdttxdaumatzjtfsfx.supabase.co';
+    const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcGR0dHhkYXVtYXR6anRmc2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzA0ODEsImV4cCI6MjA5MzMwNjQ4MX0.MySuaF_XyKzIOPe_u9oFgfgeDG7seTIbz1cF_x6oNDQ';
     function getCfg() {
-      try { return JSON.parse(localStorage.getItem(CFG_KEY)); } catch { return null; }
+      if (localStorage.getItem(SYNC_DISABLED_KEY) === '1') return null;
+      try {
+        const saved = JSON.parse(localStorage.getItem(CFG_KEY));
+        if (saved && saved.url && saved.key) return saved;
+      } catch {}
+      return { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY };
     }
     function setCfg(url, key) {
+      localStorage.removeItem(SYNC_DISABLED_KEY);
       localStorage.setItem(CFG_KEY, JSON.stringify({ url: url.trim(), key: key.trim() }));
     }
     function clearCfg() {
       localStorage.removeItem(CFG_KEY);
+      localStorage.setItem(SYNC_DISABLED_KEY, '1');
     }
 
     /* ==========================================================
@@ -328,12 +338,15 @@
         // Écoute les changements de session
         supabase.auth.onAuthStateChange(async (event, session) => {
           state.user = session?.user || null;
-          if (state.user) {
-            await syncEngine.fullSync();
+          
+          // On ne lance la sync automatique ici QUE lors d'une action de connexion
+          if (event === 'SIGNED_IN') {
+            syncEngine.fullSync();
             subscribeRealtime();
-          } else {
+          } else if (event === 'SIGNED_OUT') {
             unsubscribeRealtime();
           }
+          
           render();
         });
 
@@ -631,15 +644,15 @@
           </div>
       `;
 
-      // Bannière de bienvenue (si pas encore configuré et pas dismissé)
-      if (!state.user && !getCfg() && !state.welcomeBannerDismissed) {
+      // Bannière de bienvenue (si pas connecté et pas dismissé)
+      if (!state.user && localStorage.getItem(SYNC_DISABLED_KEY) !== '1' && !state.welcomeBannerDismissed) {
         html += `
           <div class="welcome-banner">
             <div class="welcome-banner-text">
               <strong>Synchroniser entre appareils</strong>
-              Active la synchronisation cloud (gratuit avec Supabase) pour retrouver tes données sur tous tes appareils.
+              Connecte-toi pour synchroniser tes données sur tous tes appareils.
             </div>
-            <button data-action="open-cloud-setup">Activer</button>
+            <button data-action="open-auth">Se connecter</button>
             <button class="close-x" data-action="dismiss-welcome">×</button>
           </div>
         `;
@@ -1054,8 +1067,8 @@
 
       // ===== Cloud =====
       else if (action === 'open-cloud-setup') {
-        const cfg = getCfg();
-        state.cloudForm = { url: cfg?.url || '', key: cfg?.key || '' };
+        const cfg = getCfg() || { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY };
+        state.cloudForm = { url: cfg.url, key: cfg.key };
         state.authError = null;
         setState({ modal: 'cloud-setup' });
       }
@@ -1246,18 +1259,25 @@
         console.error('Local DB error', e);
       }
 
-      // Si une config cloud est sauvegardée, init Supabase + restore session
+      // Si une config cloud est disponible, init Supabase + restore session
       if (getCfg()) {
-        try {
-          await initSupabaseClient();
-          if (state.user) {
-            subscribeRealtime();
-            // Sync en arrière-plan, ne bloque pas le rendu
-            syncEngine.fullSync();
+        const cloudInit = (async () => {
+          try {
+            await initSupabaseClient();
+            if (state.user) {
+              subscribeRealtime();
+              syncEngine.fullSync();
+            }
+          } catch (e) {
+            console.error('Cloud init error', e);
           }
-        } catch (e) {
-          console.error('Cloud init error', e);
-        }
+        })();
+
+        // Timeout 8s : si le SDK Supabase (esm.sh) ne répond pas, on débloque quand même la page
+        await Promise.race([
+          cloudInit,
+          new Promise(resolve => setTimeout(resolve, 8000))
+        ]);
       }
 
       setState({ loading: false });
