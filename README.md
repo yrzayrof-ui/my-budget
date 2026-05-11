@@ -1,5 +1,5 @@
 # Mon Budget — Synchronisation cloud entre appareils
-
+Base de données : https://supabase.com/dashboard/project/nfpdttxdaumatzjtfsfx
 Application web installable (PWA) avec **synchronisation cloud temps réel** via [Supabase](https://supabase.com), une plateforme open-source ([github.com/supabase/supabase](https://github.com/supabase/supabase)).
 
 ## ✨ Architecture
