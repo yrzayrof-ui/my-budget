@@ -277,6 +277,26 @@
     .scan-confirm-btn { width: 100%; background: #9A6240; color: #F5F1E8; border: none; border-radius: 1rem; padding: 1rem; font-family: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 1.25rem; transition: transform 0.1s; }
     .scan-confirm-btn:active { transform: scale(0.97); }
     .scan-confirm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .scan-history-btn { width: 100%; background: none; border: 1.5px dashed #d6d3d1; border-radius: 1rem; padding: 0.75rem; font-family: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer; color: #78716c; display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin-top: 0.5rem; }
+    .scan-history-btn:active { background: #f5f1e8; }
+    .scan-history-list { display: flex; flex-direction: column; gap: 0.625rem; }
+    .scan-receipt-item { background: white; border-radius: 1rem; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; }
+    .scan-receipt-item:active { background: #faf9f7; }
+    .scan-receipt-thumb { width: 3.5rem; height: 3.5rem; object-fit: cover; border-radius: 0.625rem; flex-shrink: 0; background: #f0ece4; }
+    .scan-receipt-thumb-empty { width: 3.5rem; height: 3.5rem; border-radius: 0.625rem; flex-shrink: 0; background: #f0ece4; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    .scan-receipt-info { flex: 1; min-width: 0; }
+    .scan-receipt-desc { font-size: 0.85rem; font-weight: 600; color: #1c1917; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .scan-receipt-meta { font-size: 0.72rem; color: #78716c; margin-top: 0.15rem; }
+    .scan-receipt-amount { font-family: 'Fraunces', Georgia, serif; font-size: 1rem; font-weight: 500; color: #9A6240; white-space: nowrap; }
+    .scan-receipt-del { background: none; border: none; cursor: pointer; color: #c4b5b0; padding: 0.3rem; font-size: 1rem; line-height: 1; }
+    .scan-receipt-del:active { color: #ef4444; }
+    .scan-receipt-empty { text-align: center; color: #a8a29e; font-size: 0.82rem; padding: 2rem 0; }
+    .receipt-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem; }
+    .receipt-modal-img { max-width: 100%; max-height: 75vh; border-radius: 1rem; object-fit: contain; }
+    .receipt-modal-info { margin-top: 1rem; text-align: center; color: white; }
+    .receipt-modal-desc { font-family: 'Fraunces', Georgia, serif; font-size: 1.1rem; font-weight: 500; }
+    .receipt-modal-meta { font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem; }
+    .receipt-modal-close { position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(255,255,255,0.15); border: none; border-radius: 999px; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 1.1rem; }
 
     /* Page comparaison */
     .compare-months { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
@@ -358,9 +378,10 @@
        Cache local + fonctionnement hors-ligne
        ========================================================== */
     const DB_NAME = 'budgetDB';
-    const DB_VERSION = 3;
+    const DB_VERSION = 4;
     const STORE = 'transactions';
     const LOANS_STORE = 'loans';
+    const RECEIPTS_STORE = 'receipts';
 
     function openDB() {
       return new Promise((resolve, reject) => {
@@ -379,6 +400,9 @@
           if (!store.indexNames.contains('updated_at')) store.createIndex('updated_at', 'updated_at');
           if (!db.objectStoreNames.contains(LOANS_STORE)) {
             db.createObjectStore(LOANS_STORE, { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains(RECEIPTS_STORE)) {
+            db.createObjectStore(RECEIPTS_STORE, { keyPath: 'id' });
           }
         };
         req.onsuccess = (e) => resolve(e.target.result);
@@ -465,6 +489,36 @@
     async function loanGetUnsynced() {
       const all = await loanGetAll();
       return all.filter(l => l.synced === false);
+    }
+
+    async function receiptPut(item) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(RECEIPTS_STORE, 'readwrite');
+        const req = tx.objectStore(RECEIPTS_STORE).put(item);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function receiptGetAll() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(RECEIPTS_STORE, 'readonly');
+        const req = tx.objectStore(RECEIPTS_STORE).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function receiptDelete(id) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(RECEIPTS_STORE, 'readwrite');
+        tx.objectStore(RECEIPTS_STORE).delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
     }
 
     /* ==========================================================
@@ -811,12 +865,14 @@
       loanForm: { amount: '', lender: '', lenderType: 'famille', direction: 'received', description: '' },
       familyForm: { name: '' },
       currentPage: 'budget',     // 'budget' | 'stats' | 'compare' | 'scan'
-      scanStep: 'idle',          // 'idle' | 'processing' | 'review'
+      scanStep: 'idle',          // 'idle' | 'processing' | 'review' | 'history'
       scanImage: null,
       scanAmount: '',
       scanCategory: 'alimentation',
       scanDescription: '',
       scanOCRFound: false,
+      scanReceipts: [],
+      scanViewReceiptId: null,
       statsPeriod: 'month',      // 'month' | 'pick' | '3months' | '6months' | 'year'
       statsPickedMonth: new Date().toISOString().slice(0, 7), // 'YYYY-MM'
       compareMonth1: (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 7); })(),
@@ -1003,10 +1059,25 @@
     ];
 
     function renderScanPage() {
-      const { scanStep, scanImage, scanAmount, scanCategory, scanDescription, scanOCRFound } = state;
+      const { scanStep, scanImage, scanAmount, scanCategory, scanDescription, scanOCRFound, scanReceipts, scanViewReceiptId } = state;
       const validAmount = parseFloat((scanAmount || '').replace(',', '.')) > 0;
 
+      // Modal plein écran pour voir une facture
+      const viewReceipt = scanViewReceiptId ? scanReceipts.find(r => r.id === scanViewReceiptId) : null;
+      const receiptModal = viewReceipt ? `
+        <div class="receipt-modal-backdrop" data-action="scan-close-receipt">
+          <button class="receipt-modal-close" data-action="scan-close-receipt">✕</button>
+          ${viewReceipt.imageDataUrl
+            ? `<img src="${viewReceipt.imageDataUrl}" class="receipt-modal-img" alt="Facture">`
+            : `<div style="font-size:4rem">🧾</div>`}
+          <div class="receipt-modal-info">
+            <p class="receipt-modal-desc">${escapeHtml(viewReceipt.description)}</p>
+            <p class="receipt-modal-meta">${formatMoney(viewReceipt.amount)} DH · ${formatDate(viewReceipt.date)}</p>
+          </div>
+        </div>` : '';
+
       if (scanStep === 'idle') {
+        const count = scanReceipts.length;
         return `
           <div class="scan-hero">
             <div class="scan-hero-icon">${ICONS.cameraLg}</div>
@@ -1018,7 +1089,10 @@
           </label>
           <input id="scan-file-input" type="file" accept="image/*" capture="environment" style="display:none">
           <button class="scan-manual-btn" data-action="scan-manual">Saisir le montant manuellement</button>
-          </div>`; // ferme .container
+          <button class="scan-history-btn" data-action="scan-history">
+            🧾 Historique des factures${count > 0 ? ` <span style="background:#e7e5e4;border-radius:999px;padding:0.1rem 0.45rem;font-size:0.75rem">${count}</span>` : ''}
+          </button>
+          </div>${receiptModal}`; // ferme .container
       }
 
       if (scanStep === 'processing') {
@@ -1032,7 +1106,7 @@
           <div style="text-align:center;margin-top:0.5rem">
             <button class="scan-cancel-btn" data-action="scan-cancel">Annuler</button>
           </div>
-          </div>`; // ferme .container
+          </div>${receiptModal}`; // ferme .container
       }
 
       if (scanStep === 'no-key') {
@@ -1047,7 +1121,32 @@
             <button class="scan-manual-btn" data-action="scan-manual" style="margin-bottom:0.75rem">Saisir le montant manuellement</button>
             <button class="scan-cancel-btn" data-action="open-menu">Aller dans les réglages →</button>
           </div>
-          </div>`; // ferme .container
+          </div>${receiptModal}`; // ferme .container
+      }
+
+      if (scanStep === 'history') {
+        const sorted = [...scanReceipts].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const itemsHtml = sorted.length === 0
+          ? `<p class="scan-receipt-empty">Aucune facture enregistrée</p>`
+          : sorted.map(r => `
+            <div class="scan-receipt-item" data-action="scan-view-receipt" data-receipt-id="${r.id}">
+              ${r.imageDataUrl
+                ? `<img src="${r.imageDataUrl}" class="scan-receipt-thumb" alt="">`
+                : `<div class="scan-receipt-thumb-empty">🧾</div>`}
+              <div class="scan-receipt-info">
+                <p class="scan-receipt-desc">${escapeHtml(r.description)}</p>
+                <p class="scan-receipt-meta">${formatDate(r.date)} · ${r.category}</p>
+              </div>
+              <span class="scan-receipt-amount">${formatMoney(r.amount)} DH</span>
+              <button class="scan-receipt-del" data-action="scan-delete-receipt" data-receipt-id="${r.id}" title="Supprimer">✕</button>
+            </div>`).join('');
+        return `
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem">
+            <button class="scan-cancel-btn" data-action="scan-history-back" style="text-decoration:none;font-size:1.1rem;padding:0">←</button>
+            <p style="font-family:'Fraunces',Georgia,serif;font-size:1.1rem;font-weight:500;color:#1c1917;margin:0">Historique des factures</p>
+          </div>
+          <div class="scan-history-list">${itemsHtml}</div>
+          </div>${receiptModal}`; // ferme .container
       }
 
       // review step
@@ -1084,7 +1183,7 @@
         <div style="text-align:center;margin-top:0.75rem">
           <button class="scan-cancel-btn" data-action="scan-reset">← Nouvelle photo</button>
         </div>
-        </div>`; // ferme .container
+        </div>${receiptModal}`; // ferme .container
     }
 
     function renderComparePage() {
@@ -2302,10 +2401,32 @@
         setState({ currentPage: 'compare' });
       }
       else if (action === 'nav-scan') {
-        setState({ currentPage: 'scan', scanStep: 'idle', scanImage: null, scanAmount: '', scanDescription: '', scanOCRFound: false });
+        const receipts = await receiptGetAll();
+        setState({ currentPage: 'scan', scanStep: 'idle', scanImage: null, scanAmount: '', scanDescription: '', scanOCRFound: false, scanReceipts: receipts });
       }
       else if (action === 'scan-manual') {
         setState({ scanStep: 'review', scanOCRFound: false });
+      }
+      else if (action === 'scan-history') {
+        setState({ scanStep: 'history' });
+      }
+      else if (action === 'scan-history-back') {
+        setState({ scanStep: 'idle' });
+      }
+      else if (action === 'scan-view-receipt') {
+        e.stopPropagation();
+        if (target.dataset.receiptId) setState({ scanViewReceiptId: target.dataset.receiptId });
+      }
+      else if (action === 'scan-close-receipt') {
+        setState({ scanViewReceiptId: null });
+      }
+      else if (action === 'scan-delete-receipt') {
+        e.stopPropagation();
+        const rid = target.dataset.receiptId;
+        if (!rid) return;
+        await receiptDelete(rid);
+        const receipts = await receiptGetAll();
+        setState({ scanReceipts: receipts, scanViewReceiptId: null });
       }
       else if (action === 'scan-cancel' || action === 'scan-reset') {
         setState({ scanStep: 'idle', scanImage: null, scanAmount: '', scanDescription: '', scanOCRFound: false });
@@ -2318,17 +2439,31 @@
         const num = parseFloat(state.scanAmount.replace(',', '.'));
         if (isNaN(num) || num <= 0) return;
         const cat = SCAN_CATS.find(c => c.id === state.scanCategory) || SCAN_CATS[0];
+        const txId = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8));
+        const desc = state.scanDescription.trim() || (cat.label + ' (facture scannée)');
         const tx = {
-          id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
+          id: txId,
           type: 'expense',
           amount: num,
           category: state.scanCategory,
-          description: state.scanDescription.trim() || (cat.label + ' (facture scannée)'),
+          description: desc,
           date: new Date().toISOString(),
           deleted_at: null,
           synced: false,
         };
         await dbPut(tx);
+        if (state.scanImage) {
+          await receiptPut({
+            id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2, 8)),
+            txId,
+            imageDataUrl: state.scanImage,
+            date: tx.date,
+            amount: num,
+            category: state.scanCategory,
+            description: desc,
+          });
+          state.scanReceipts = await receiptGetAll();
+        }
         if (state.user) syncEngine.pushChange(tx);
         await reloadFromLocal();
         setState({ currentPage: 'budget', scanStep: 'idle', scanImage: null, scanAmount: '', scanDescription: '', scanOCRFound: false });
