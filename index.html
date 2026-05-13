@@ -298,6 +298,25 @@
     .receipt-modal-meta { font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem; }
     .receipt-modal-close { position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(255,255,255,0.15); border: none; border-radius: 999px; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 1.1rem; }
 
+    /* Filtre catégorie */
+    .cat-filter-bar { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 0.75rem; scrollbar-width: none; }
+    .cat-filter-bar::-webkit-scrollbar { display: none; }
+    .cat-filter-chip { flex-shrink: 0; display: flex; align-items: center; gap: 0.3rem; border: 1.5px solid #e7e5e4; background: white; border-radius: 999px; padding: 0.3rem 0.75rem; font-family: inherit; font-size: 0.78rem; font-weight: 500; cursor: pointer; color: #57534e; white-space: nowrap; transition: all 0.15s; }
+    .cat-filter-chip.active { color: white; border-color: transparent; }
+    .cat-filter-chip:active { transform: scale(0.95); }
+    /* Tx avec ticket */
+    .tx-item { cursor: default; transition: background 0.12s; border-radius: 1rem; }
+    .tx-item.has-receipt { cursor: pointer; }
+    .tx-item.has-receipt:active { background: #f5f1e8; }
+    .tx-receipt-icon { font-size: 0.85rem; color: #a8a29e; flex-shrink: 0; margin-left: 0.25rem; }
+    /* Modal ticket depuis historique */
+    .tx-receipt-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem; }
+    .tx-receipt-modal-img { max-width: 100%; max-height: 72vh; border-radius: 1rem; object-fit: contain; }
+    .tx-receipt-modal-info { margin-top: 1rem; text-align: center; color: white; }
+    .tx-receipt-modal-desc { font-family: 'Fraunces', Georgia, serif; font-size: 1.1rem; font-weight: 500; }
+    .tx-receipt-modal-meta { font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem; }
+    .tx-receipt-modal-close { position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(255,255,255,0.15); border: none; border-radius: 999px; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 1.1rem; }
+
     /* Page comparaison */
     .compare-months { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
     .compare-month-card { background: white; border-radius: 1rem; padding: 0.875rem 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
@@ -758,6 +777,7 @@
        5) ICÔNES SVG
        ========================================================== */
     const ICONS = {
+      utensils: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
       wallet: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v0"/><circle cx="18" cy="14" r="2"/></svg>',
       walletBig: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v0"/><circle cx="18" cy="14" r="2"/></svg>',
       plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
@@ -807,6 +827,7 @@
         { id: 'factures', label: 'Factures', icon: 'receipt', color: '#6B7B8C' },
         { id: 'epargne', label: 'Épargne', icon: 'piggy', color: '#5B8266' },
         { id: 'remboursement', label: 'Remboursement', icon: 'loan', color: '#5C5A8E' },
+        { id: 'restaurant', label: 'Restaurant', icon: 'utensils', color: '#FFEA99' },
         { id: 'pret-donne', label: 'Prêt donné', icon: 'loan', color: '#C49B5B' },
         { id: 'autres', label: 'Autres', icon: 'more', color: '#7A6A5A' },
       ],
@@ -873,6 +894,9 @@
       scanOCRFound: false,
       scanReceipts: [],
       scanViewReceiptId: null,
+      allReceipts: [],
+      filterCat: null,
+      viewTxReceipt: null,
       statsPeriod: 'month',      // 'month' | 'pick' | '3months' | '6months' | 'year'
       statsPickedMonth: new Date().toISOString().slice(0, 7), // 'YYYY-MM'
       compareMonth1: (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 7); })(),
@@ -891,6 +915,7 @@
       state.transactions = all.filter(t => !t.deleted_at);
       const allLoans = await loanGetAll();
       state.loans = allLoans.filter(l => !l.deleted_at);
+      try { state.allReceipts = await receiptGetAll(); } catch {}
     }
 
     /* ==========================================================
@@ -1555,27 +1580,51 @@
         html += `</div></section>`;
       }
 
+      // Construction du filtre catégorie
+      const catCounts = {};
+      monthTx.forEach(tx => { catCounts[tx.type + ':' + tx.category] = (catCounts[tx.type + ':' + tx.category] || 0) + 1; });
+      const activeCats = Object.keys(catCounts).map(key => {
+        const [type, catId] = key.split(':');
+        return { type, catId, count: catCounts[key], cat: findCat(type, catId) };
+      });
+      const displayedTx = state.filterCat
+        ? monthTx.filter(tx => tx.type + ':' + tx.category === state.filterCat)
+        : monthTx;
+
       html += `
         <section class="section">
           <div class="section-header">
             <h2 class="section-title" style="margin-bottom:0">Historique</h2>
-            <span class="section-count">${monthTx.length} opérations</span>
+            <span class="section-count">${displayedTx.length} opération${displayedTx.length !== 1 ? 's' : ''}</span>
           </div>`;
 
-      if (monthTx.length === 0) {
+      if (activeCats.length > 1) {
+        const allActive = !state.filterCat;
+        let chips = `<button class="cat-filter-chip${allActive ? ' active' : ''}" data-action="filter-cat" data-cat="" style="${allActive ? 'background:#2D2A24' : ''}">Tous (${monthTx.length})</button>`;
+        activeCats.forEach(({ type, catId, count, cat }) => {
+          const key = type + ':' + catId;
+          const isActive = state.filterCat === key;
+          chips += `<button class="cat-filter-chip${isActive ? ' active' : ''}" data-action="filter-cat" data-cat="${key}" style="${isActive ? 'background:' + cat.color : ''}">${cat.label} <span style="opacity:0.7">${count}</span></button>`;
+        });
+        html += `<div class="cat-filter-bar">${chips}</div>`;
+      }
+
+      if (displayedTx.length === 0) {
         html += `
           <div class="empty">
             <div class="empty-icon">${ICONS.calendar}</div>
-            <p class="empty-text">Aucune opération ce mois-ci</p>
-            <p class="empty-hint">Ajoute ton salaire ou une dépense</p>
+            <p class="empty-text">${state.filterCat ? 'Aucune opération dans cette catégorie' : 'Aucune opération ce mois-ci'}</p>
+            <p class="empty-hint">${state.filterCat ? '' : 'Ajoute ton salaire ou une dépense'}</p>
           </div>`;
       } else {
         html += '<div class="tx-list">';
-        monthTx.forEach(tx => {
+        displayedTx.forEach(tx => {
           const cat = findCat(tx.type, tx.category);
           const isIncome = tx.type === 'income';
+          const receipt = state.allReceipts.find(r => r.txId === tx.id);
+          const hasReceipt = !!receipt;
           html += `
-            <div class="tx-item">
+            <div class="tx-item${hasReceipt ? ' has-receipt' : ''}" ${hasReceipt ? `data-action="view-tx-receipt" data-receipt-id="${receipt.id}"` : ''}>
               <div class="tx-icon" style="background:${cat.color}22; color:${cat.color}">${ICONS[cat.icon]}</div>
               <div class="tx-content">
                 <p class="tx-desc">${escapeHtml(tx.description)}</p>
@@ -1584,6 +1633,7 @@
               <p class="tx-amount num" style="color:${isIncome ? '#5B8266' : '#9A6240'}">
                 ${isIncome ? '+' : '-'}${formatMoney(tx.amount)}
               </p>
+              ${hasReceipt ? '<span class="tx-receipt-icon">🧾</span>' : ''}
               <button class="tx-delete" data-action="ask-delete" data-id="${tx.id}" aria-label="Supprimer">${ICONS.trash}</button>
             </div>`;
         });
@@ -1591,6 +1641,20 @@
       }
 
       html += `</section></div>`;
+
+      // Modal ticket depuis historique
+      if (state.viewTxReceipt) {
+        const r = state.viewTxReceipt;
+        html += `
+          <div class="tx-receipt-modal" data-action="close-tx-receipt">
+            <button class="tx-receipt-modal-close" data-action="close-tx-receipt">✕</button>
+            ${r.imageDataUrl ? `<img src="${r.imageDataUrl}" class="tx-receipt-modal-img" alt="Ticket">` : '<div style="font-size:4rem">🧾</div>'}
+            <div class="tx-receipt-modal-info">
+              <p class="tx-receipt-modal-desc">${escapeHtml(r.description)}</p>
+              <p class="tx-receipt-modal-meta">${formatMoney(r.amount)} DH · ${formatDate(r.date)}</p>
+            </div>
+          </div>`;
+      }
       } // fin else budget
 
       // Barre de navigation (fixe, toujours visible)
@@ -2213,7 +2277,22 @@
         if (state.user) syncEngine.pushChange(newTx);
       }
 
+      else if (action === 'filter-cat') {
+        const cat = target.dataset.cat;
+        setState({ filterCat: cat || null });
+      }
+      else if (action === 'view-tx-receipt') {
+        const rid = target.dataset.receiptId;
+        if (rid) {
+          const receipt = state.allReceipts.find(r => r.id === rid);
+          if (receipt) setState({ viewTxReceipt: receipt });
+        }
+      }
+      else if (action === 'close-tx-receipt') {
+        setState({ viewTxReceipt: null });
+      }
       else if (action === 'ask-delete') {
+        e.stopPropagation();
         setState({ confirmDelete: target.dataset.id });
       }
       else if (action === 'close-confirm') {
@@ -2239,8 +2318,13 @@
             });
           }
         }
+        // Supprime le ticket scanné associé si existant
+        const linkedReceipt = state.allReceipts.find(r => r.txId === id);
+        if (linkedReceipt) {
+          try { await receiptDelete(linkedReceipt.id); } catch {}
+        }
         await reloadFromLocal();
-        setState({ confirmDelete: null });
+        setState({ confirmDelete: null, viewTxReceipt: null });
       }
 
       // ===== Cloud =====
@@ -2392,7 +2476,7 @@
 
       // ===== Navigation =====
       else if (action === 'nav-budget') {
-        setState({ currentPage: 'budget' });
+        setState({ currentPage: 'budget', filterCat: null });
       }
       else if (action === 'nav-stats') {
         setState({ currentPage: 'stats' });
@@ -2462,7 +2546,9 @@
             category: state.scanCategory,
             description: desc,
           });
-          state.scanReceipts = await receiptGetAll();
+          const updatedReceipts = await receiptGetAll();
+          state.scanReceipts = updatedReceipts;
+          state.allReceipts = updatedReceipts;
         }
         if (state.user) syncEngine.pushChange(tx);
         await reloadFromLocal();

@@ -1,8 +1,8 @@
 // Service Worker - Mon Budget (cloud sync)
 // Stratégie : cache-first pour les assets de l'app, network-first avec fallback pour les API
 
-const CACHE_NAME = 'mon-budget-cloud-IA-v1.8';
-const RUNTIME_CACHE = 'mon-budget-runtime-IA-v1.8';
+const CACHE_NAME = 'mon-budget-cloud-IA-v2.1';
+const RUNTIME_CACHE = 'mon-budget-runtime-IA-v2.1';
 
 // Fichiers de l'app à mettre en cache à l'installation
 const APP_SHELL = [
